@@ -1,0 +1,9 @@
+/*
+ * ProcessIT Global — About-Pitg/about-pitg.css
+ * About section (#about): eyebrow, headline, three sentence cards.
+ * Shared layout tokens (.gh-sec, .g3, .c, .eb, .nx-sec) live in styles.css;
+ * this file holds About-PITG-specific polish so the segment can travel with the folder.
+ */
+#about .gh-sh{max-width:720px}
+#about .g3{align-items:stretch}
+#about .c{height:100%}
