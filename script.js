@@ -1,7 +1,7 @@
 /**
  * ProcessIT Global — script.js
  * ----------------------------
- * Client-side app for the portfolio portal (no build step / no framework).
+ * All client-side logic for the portfolio portal (no build step / no framework).
  *
  * Architecture overview
  * - PG[] ........ Page content model (sections rendered as HTML blocks)
@@ -9,7 +9,8 @@
  * - Hash router . #pageKey shows detail in #vp; empty hash shows home (#vh)
  * - Carousel .... 3D portfolio slides in #stg (rot / auto)
  * - Search ...... Modal palette (#srch); open with / or Cmd|Ctrl+K
- * - Case studies  Separate horizontal carousel (#cc) at bottom of file
+ * - Header/footer Mega-menu, mobile nav, footer columns, hero portfolio-map
+ * - Case studies  Separate horizontal carousel (#cc)
  *
  * Test hook: set window.__PITG_TEST = true before load to expose helpers.
  */
@@ -121,10 +122,40 @@ function cardsOf(k){var b=BYK[k].b.filter(function(x){return x[0]==="cards"})[0]
 var GR=[["Capabilities",["features","functions","business","arsenal"]],["Proof",["track","data","bfsi"]],["Company",["what","problem","ecosystem"]]];
 var AR='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>';
 var DOT='<span style="display:block;width:10px;height:10px;border-radius:50%;background:var(--a)"></span>';
-/* ---------- Header chrome (menu/nav) provided by header/header.js ---------- */
-function menu(o){if(window.PITGHeader&&PITGHeader.menu)PITGHeader.menu(o)}
-function closeNav(){if(window.PITGHeader&&PITGHeader.closeNav)PITGHeader.closeNav()}
-/* ---------- Hero SVG built by portfolio-map/portfolio-map.js (needs header logo) ---------- */
+/* ---------- Header chrome: mega-menu, mobile nav, Insights deep-link ---------- */
+var _menu=function(){},_closeNav=function(){};
+function menu(o){_menu(o)}
+function closeNav(){_closeNav()}
+function initHeader(){
+  var megaEl=$("mega");if(!megaEl)return;
+  function mlink(p){return'<a href="#'+p.k+'" style="'+st(p)+'"><i>'+DOT+'</i><span><b>'+E(p.t)+"</b><small>"+E(TZ[p.k]||"")+"</small></span></a>"}
+  megaEl.innerHTML=GR.map(function(g){return'<div class="mg"><h5>'+g[0]+"</h5>"+g[1].map(function(k){return mlink(BYK[k])}).join("")+"</div>"}).join("");
+  var ddb=$("ddb"),mega=$("mega"),nav=$("gnav");
+  _menu=function(o){mega.classList.toggle("open",o);ddb.setAttribute("aria-expanded",o)};
+  _closeNav=function(){nav.classList.remove("open")};
+  ddb.onclick=function(e){e.stopPropagation();_menu(!mega.classList.contains("open"))};
+  document.addEventListener("click",function(e){if(!mega.contains(e.target)&&!ddb.contains(e.target))_menu(false)});
+  $("bgr").onclick=function(){nav.classList.toggle("open")};
+  $("lnk-ins").onclick=function(e){e.preventDefault();nav.classList.remove("open");_menu(false);var f=function(){var el=$("insights");el&&el.scrollIntoView({behavior:"smooth"})};if(location.hash.slice(1)){location.hash="";setTimeout(f,120)}else f()};
+}
+/* ---------- Footer link columns (mirrors mega-menu groups) ---------- */
+function initFooter(){
+  var fcols=$("fcols");if(!fcols)return;
+  fcols.innerHTML=GR.map(function(g){return'<div class="fcol"><h5>'+g[0]+"</h5>"+g[1].map(function(k){return'<a href="#'+k+'">'+E(BYK[k].t)+"</a>"}).join("")+(g[0]==="Company"?'<a href="https://www.processitglobal.com" target="_blank" rel="noopener">www.processitglobal.com</a>':"")+"</div>"}).join("");
+}
+/* ---------- Hero portfolio-map SVG (#hv) ---------- */
+function initPortfolioMap(){
+  var hv=$("hv");if(!hv)return;
+  var logo=document.querySelector(".gh-logo img");
+  var logoSrc=LG||(logo?logo.src:"");
+  var cx=260,cy=230,rx=205,ry=172;
+  var s='<svg viewBox="0 0 520 460" role="img" aria-label="ProcessIT Global portfolio pages"><ellipse class="ring" cx="'+cx+'" cy="'+cy+'" rx="112" ry="96"/>';
+  PG.forEach(function(p,i){var t=(-90+i*36)*Math.PI/180,x=cx+rx*Math.cos(t),y=cy+ry*Math.sin(t),sx=cx+112*Math.cos(t),sy=cy+96*Math.sin(t),n=NT[i%NT.length],k=(i%2?1:-1)*.1,mx=(sx+x)/2-(y-sy)*k,my=(sy+y)/2+(x-sx)*k,d="M"+sx+","+sy+" Q"+mx+","+my+" "+x+","+y;s+='<path class="ed" d="'+d+'"/><circle r="3.4" fill="'+n[1]+'"><animateMotion dur="'+(4+i%4*.9)+'s" begin="'+(i*.45)+'s" repeatCount="indefinite" path="'+d+'"/></circle>'});
+  s+='<defs><filter id="lbsh" x="-20%" y="-40%" width="140%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#1F2328" flood-opacity=".08"/></filter></defs>';
+  PG.forEach(function(p,i){var t=(-90+i*36)*Math.PI/180,x=cx+rx*Math.cos(t),y=cy+ry*Math.sin(t),n=NT[i%NT.length];var tw=Math.max(p.t.length*7.35+22,72),th=26,lx=x-tw/2,ly=y-th/2;s+='<a href="#'+p.k+'" aria-label="'+E(p.t)+'"><g class="lb"><rect x="'+lx+'" y="'+ly+'" width="'+tw+'" height="'+th+'" rx="13" ry="13" fill="#fff" stroke="'+n[1]+'" stroke-width="1.2" filter="url(#lbsh)"/><text x="'+x+'" y="'+(y+4.5)+'" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">'+E(p.t)+"</text></g></a>"});
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="62" fill="#fff" stroke="#DCE5F4"/><image href="'+logoSrc+'" x="'+(cx-44)+'" y="'+(cy-33)+'" width="88" height="66"/></svg>';
+  hv.innerHTML=s;
+}
 /* ---------- Home KPI strip (subset of 'what' page KPIs) ---------- */
 (function(){var kp=BYK.what.b.filter(function(x){return x[0]==="kp"})[0][1];$("sti").innerHTML=[0,3,4,5].map(function(i){return"<div><strong>"+E(kp[i][0])+"</strong><span>"+E(kp[i][1])+"</span></div>"}).join("")})();
 
@@ -167,7 +198,6 @@ var LB=BL.map(function(b){return b[0]});
 $("feed").innerHTML='<div class="gh-fh" role="tablist" aria-label="Filter insights"><button class="on" data-l="" type="button">All <b>'+BL.length+"</b></button>"+LB.map(function(l){return'<button data-l="'+l+'" type="button">'+E(l)+"</button>"}).join("")+"</div>"
  +BL.map(function(b){return'<a class="gh-row" href="#'+b[3]+'" data-l="'+b[0]+'"><span class="ic">'+DOC+'</span><div><h3>'+E(b[1])+'</h3><span class="lbl">'+E(b[0])+"</span><p>"+E(b[2])+"</p><small>Related page: "+E(BYK[b[3]].t)+'</small></div><span class="ar">'+AR+"</span></a>"}).join("");
 [].slice.call(document.querySelectorAll(".gh-fh button")).forEach(function(b){b.onclick=function(){[].slice.call(document.querySelectorAll(".gh-fh button")).forEach(function(x){x.classList.toggle("on",x===b)});[].slice.call(document.querySelectorAll(".gh-row")).forEach(function(r){r.hidden=!!b.dataset.l&&r.dataset.l!==b.dataset.l})}});
-/* ---------- Footer columns built by footer/footer.js ---------- */
 /* ---------- Scroll reveal: IntersectionObserver adds .in to .b blocks ---------- */
 var io=null;if("IntersectionObserver" in window)io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:.06,rootMargin:"0px 0px -4% 0px"});
 function reveal(root){[].slice.call(root.querySelectorAll(".b")).forEach(function(b){if(io)io.observe(b);else b.classList.add("in")})}
@@ -201,13 +231,6 @@ sr.addEventListener("click",function(e){var a=e.target.closest("a");if(a){closeS
 addEventListener("keydown",function(e){var t=e.target&&e.target.tagName,typing=t==="INPUT"||t==="TEXTAREA";
  if(srch.classList.contains("open")){if(e.key==="Escape")closeS();else if(e.key==="ArrowDown"){e.preventDefault();ssel=Math.min(sres.length-1,ssel+1);srender()}else if(e.key==="ArrowUp"){e.preventDefault();ssel=Math.max(0,ssel-1);srender()}else if(e.key==="Enter"&&sres[ssel]){e.preventDefault();var h=sres[ssel].h;closeS();location.hash=h==="#"?"":h.slice(1)}return}
  if(!typing&&(e.key==="/"||((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"))){e.preventDefault();openS()}else if(e.key==="Escape")menu(false)});
-window.__pitgAfterChrome=function(){
-  var logo=document.querySelector(".gh-logo img");
-  LG=logo?logo.src:"";
-  /* Hero SVG built by portfolio-map/portfolio-map.js */
-  if(window.PITGPortfolioMap&&PITGPortfolioMap.init)PITGPortfolioMap.init();
-  route();
-};
 if(window.__PITG_TEST)window.__PITG_TEST={PG:PG,rot:rot,route:route,cur:function(){return cur},openS:openS,srun:srun,sres:function(){return sres}};
 
 /* ---------- Case-studies carousel (#cc)
@@ -219,3 +242,13 @@ document.getElementById("ccp").onclick=function(){go(i-1)};document.getElementBy
 document.getElementById("cc").addEventListener("keydown",function(e){if(e.key==="ArrowRight")go(i+1);else if(e.key==="ArrowLeft")go(i-1)});
 var sx=null,v=document.querySelector(".cc-vp");v.addEventListener("pointerdown",function(e){sx=e.clientX});v.addEventListener("pointerup",function(e){if(sx==null)return;var d=e.clientX-sx;sx=null;if(Math.abs(d)>55)go(i+(d<0?1:-1))});
 go(0)})();
+
+/* ---------- Boot: header, footer, hero map, then route ---------- */
+(function(){
+  initHeader();
+  initFooter();
+  var logo=document.querySelector(".gh-logo img");
+  LG=logo?logo.src:"";
+  initPortfolioMap();
+  route();
+})();

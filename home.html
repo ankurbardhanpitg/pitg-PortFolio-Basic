@@ -2,19 +2,16 @@
   ProcessIT Global — Marketing / portfolio portal
   -----------------------------------------------
   Single-page app shell: home view (#vh) + hash-routed detail pages (#vp).
-  Header/footer/portfolio-map/About-Pitg markup, styles, and scripts live in
-  header/, footer/, portfolio-map/, and About-Pitg/.
-  App logic: script.js; shared styles: styles.css.
+  Markup: home.html | Styles: styles.css | Logic: script.js | Assets: assets/
   Key IDs: gnav, ddb, mega, sb, bgr, hv, sti, stg, dts, cnt,
   pv, nv, slides, feed, fcols, vh, vp, srch, si, sr, cc, cctr, ccp, ccn, cccnt.
 -->
 
-<!-- ========== Document head: meta, fonts, stylesheets ========== -->
+<!-- ========== Document head: meta, fonts, stylesheet ========== -->
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><title>ProcessIT Global | IAM-first cybersecurity</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="header/header.css"><link rel="stylesheet" href="footer/footer.css"><link rel="stylesheet" href="portfolio-map/portfolio-map.css"><link rel="stylesheet" href="About-Pitg/about-pitg.css"></head><body>
+<link rel="stylesheet" href="styles.css"></head><body>
 
-<!-- ========== Sticky site header (from header/header.html) ========== -->
 <!-- ========== Sticky site header: logo, nav, search, CTA ========== -->
 <header class="gh"><div class="gh-in"><a class="gh-logo" href="#" aria-label="ProcessIT Global home"><img src="assets/logo.png" alt="ProcessIT Global"></a>
 <nav class="gh-nav" id="gnav" aria-label="Main"><div class="dd"><button id="ddb" type="button" aria-expanded="false" aria-controls="mega">Portfolio <i>&#9662;</i></button><div class="mega" id="mega"></div></div><a href="#" id="lnk-ins">Insights</a><a href="#track">Track record</a><a href="#ecosystem">Ecosystem</a></nav>
@@ -26,12 +23,11 @@
 <!-- Home view: shown when hash is empty; hidden on detail routes -->
 <div id="vh">
 
-<!-- Hero: headline + CTA; portfolio-map window from portfolio-map/portfolio-map.html -->
+<!-- Hero: headline + CTA + portfolio-map window -->
 <section class="gh-hero"><div class="gh-hin"><span class="gh-pill"><i></i>India &middot; Singapore &middot; Malaysia</span><h1>IAM-first cybersecurity architecture and managed security.</h1><p class="l">Identity-led protection across access, data and applications, delivered from India to Singapore and Malaysia.</p><button class="btn-pri big" id="go" type="button">Explore categories &darr;</button>
-<!-- ========== Hero portfolio-map window (from portfolio-map/portfolio-map.html) ========== -->
 <div class="gh-win"><div class="gh-wb"><i></i><i></i><i></i><span>pitg / portfolio-map</span></div><div class="gh-wc hv" id="hv"></div></div></div></section>
 
-<!-- ========== About PITG (from About-Pitg/about-pitg.html) ========== -->
+<!-- ========== About PITG ========== -->
 <section class="gh-sec nx-sec" id="about"><div class="wrap"><div class="gh-sh"><span class="eb">About PITG</span><h2>Three sentences on PITG.</h2><p>Who we are, what we do and why it holds up in production.</p></div><div class="g3"><div class="c" style="--k:#2F6BFF"><span class="n">01</span><h4>Who we are</h4><p>ProcessIT Global is an IAM-first cybersecurity architecture and managed-security firm, serving clients from India to Singapore and Malaysia.</p></div><div class="c" style="--k:#2F6BFF"><span class="n">02</span><h4>What we do</h4><p>We consult, engineer and operate identity, data, application and SOC platforms, building custom connectors where OEM products stop.</p></div><div class="c" style="--k:#2F6BFF"><span class="n">03</span><h4>Why it works</h4><p>Over 40 IAM and IGA projects and 1M+ identities covered for sovereign, defence and regulated clients, certified to ISO 27001:2022.</p></div></div></div></section>
 
 <!-- KPI strip: #sti populated from PG 'what' page stats -->
@@ -62,22 +58,11 @@
 <div id="vp" hidden></div>
 </main>
 
-<!-- ========== Footer (from footer/footer.html) ========== -->
+<!-- ========== Footer ========== -->
 <footer class="gh-ft"><div class="wrap"><div class="ftc"><div><img src="assets/logo.png" alt="ProcessIT Global"><p>IAM-first cybersecurity architecture and managed security. Identity-led protection across access, data and applications, delivered from India to Singapore and Malaysia.</p></div><div style="display:contents" id="fcols"></div></div><div class="fbot"><span>&copy; ProcessIT Global &nbsp;&middot;&nbsp; India &middot; Singapore &middot; Malaysia</span><a href="https://www.processitglobal.com" target="_blank" rel="noopener">www.processitglobal.com</a></div></div></footer>
 
 <!-- ========== Search modal (Cmd/Ctrl+K or /); results in #sr ========== -->
 <div class="srch" id="srch" role="dialog" aria-modal="true" aria-label="Search"><div class="sbx"><input id="si" type="text" placeholder="Search pages and insights" autocomplete="off" aria-label="Search"><div class="sres" id="sr"></div><div class="sft"><span><kbd>&uarr;</kbd> <kbd>&darr;</kbd> to move</span><span><kbd>Enter</kbd> to open</span><span><kbd>Esc</kbd> to close</span></div></div></div>
 
-<!-- App + header/footer/portfolio-map/About-Pitg component scripts -->
 <script src="script.js"></script>
-<script src="header/header.js"></script>
-<script src="footer/footer.js"></script>
-<script src="portfolio-map/portfolio-map.js"></script>
-<script src="About-Pitg/about-pitg.js"></script>
-<script>
-  if (window.PITGHeader && PITGHeader.init) PITGHeader.init();
-  if (window.PITGFooter && PITGFooter.init) PITGFooter.init();
-  if (window.PITGAboutPitg && PITGAboutPitg.init) PITGAboutPitg.init();
-  if (typeof window.__pitgAfterChrome === "function") window.__pitgAfterChrome();
-</script>
 </body></html>
