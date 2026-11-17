@@ -32,7 +32,8 @@ kbd{font:600 11px Inter,Arial,sans-serif;color:var(--mu);border:1px solid var(--
 .gh-st{border-bottom:1px solid var(--bd);background:#fff}.gh-sti{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
 .gh-sti div{padding:34px 32px;border-left:1px solid var(--bd)}.gh-sti div:first-child{border-left:0}.gh-sti strong{display:block;font:800 clamp(34px,4vw,52px)/1 "Plus Jakarta Sans",Arial,sans-serif;letter-spacing:-.04em}.gh-sti span{display:block;margin-top:10px;color:var(--mu);font-size:14.5px}
 /* ---------- Generic home section shells ---------- */
-.gh-sec{padding:92px 0}.gh-sh{max-width:720px;margin-bottom:44px}.gh-sh h2{margin:16px 0 14px;font-size:clamp(30px,4vw,52px);letter-spacing:-.04em;line-height:1.06;font-weight:800}.gh-sh p{margin:0;color:var(--mu);font-size:19px;line-height:1.6}
+.gh-sec{padding:92px 0}.gh-sh{max-width:720px;margin-bottom:44px;text-align:left}.gh-sh h2{margin:16px 0 14px;font-size:clamp(30px,4vw,52px);letter-spacing:-.04em;line-height:1.06;font-weight:800}.gh-sh p{margin:0;color:var(--mu);font-size:19px;line-height:1.6}
+#slides .gh-sh{margin-left:auto;margin-right:auto;text-align:center}
 .cs{background:var(--sf);border-bottom:1px solid var(--bd);overflow-x:clip}
 .stg{position:relative;perspective:1800px;margin:0 auto;max-width:1280px;padding:0 32px;display:grid;justify-items:center;outline:0;touch-action:pan-y}
 .ctl{display:flex;justify-content:center;align-items:center;gap:16px;margin-top:34px}
@@ -138,8 +139,8 @@ kbd{font:600 11px Inter,Arial,sans-serif;color:var(--mu);border:1px solid var(--
 .nt{border-radius:12px;background:#F6F8FA;border:1px solid var(--bd);border-left:4px solid var(--brand)}
 .ch span{border-radius:999px;box-shadow:none}.ch span:hover{transform:none}
 .pr .c:first-child{--p:#FFF8F5}.pr .c:last-child{--p:#F3FBF6}
-.how-acc{display:flex;flex-direction:row;align-items:flex-start;gap:14px}
-.how-acc details{flex:1 1 0;min-width:0;min-height:min-content;display:flex;flex-direction:column;border:1px solid var(--bd);border-radius:12px;background:#fff;overflow:hidden}
+.how-acc{display:flex;flex-direction:column;align-items:stretch;gap:14px}
+.how-acc details{flex:1 1 auto;min-width:0;min-height:min-content;display:flex;flex-direction:column;border:1px solid var(--bd);border-radius:12px;background:#fff;overflow:hidden}
 .how-acc summary{list-style:none;cursor:pointer;position:relative;padding:22px 52px 22px 22px;background:#FFF8F5}
 .how-acc summary::-webkit-details-marker{display:none}
 .how-acc summary::marker{content:""}
