@@ -212,10 +212,10 @@ if(window.__PITG_TEST)window.__PITG_TEST={PG:PG,rot:rot,route:route,cur:function
 
 /* ---------- Case-studies carousel (#cc)
  * Independent of the portfolio slides carousel.
- * Supports prev/next, keyboard arrows, swipe, and More/Less expanders.
+ * Supports prev/next, keyboard arrows and swipe. Read links open detail pages.
  */
 (function(){var tr=document.getElementById("cctr"),n=tr.children.length,i=0,cnt=document.getElementById("cccnt");function go(k){i=(k%n+n)%n;tr.style.transform="translateX(-"+i*100+"%)";cnt.innerHTML="<b>"+("0"+(i+1)).slice(-2)+"</b> / "+("0"+n).slice(-2)}
 document.getElementById("ccp").onclick=function(){go(i-1)};document.getElementById("ccn").onclick=function(){go(i+1)};
 document.getElementById("cc").addEventListener("keydown",function(e){if(e.key==="ArrowRight")go(i+1);else if(e.key==="ArrowLeft")go(i-1)});
 var sx=null,v=document.querySelector(".cc-vp");v.addEventListener("pointerdown",function(e){sx=e.clientX});v.addEventListener("pointerup",function(e){if(sx==null)return;var d=e.clientX-sx;sx=null;if(Math.abs(d)>55)go(i+(d<0?1:-1))});
-[].forEach.call(tr.querySelectorAll(".cc-btn"),function(b){b.onclick=function(){var m=b.parentNode.querySelector(".cc-more"),o=b.getAttribute("aria-expanded")==="true";m.hidden=o;b.setAttribute("aria-expanded",!o);b.firstChild.nodeValue=o?"More ":"Less "}});go(0)})();
+go(0)})();

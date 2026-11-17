@@ -177,8 +177,8 @@ kbd{font:600 11px Inter,Arial,sans-serif;color:var(--mu);border:1px solid var(--
 .cc-tr{display:flex;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
 .cc-sl{flex:0 0 100%;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;padding:48px 52px;border-top:4px solid var(--a);min-height:320px}
 .cc-l h3{margin:16px 0 0;font-size:clamp(34px,5vw,64px);line-height:1.04;letter-spacing:-.04em;font-weight:800;color:var(--a)}
-.cc-r p{margin:0 0 14px;color:#3D4650;font-size:17px;line-height:1.65}.cc-more p{font-size:15px;color:var(--mu)}
-.cc-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 20px;border-radius:999px;border:1px solid var(--a);background:transparent;color:var(--a);font:700 13.5px Inter,Arial,sans-serif;cursor:pointer;transition:.2s}
+.cc-r p{margin:0 0 18px;color:#3D4650;font-size:17px;line-height:1.65}
+.cc-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 20px;border-radius:999px;border:1px solid var(--a);background:transparent;color:var(--a);font:700 13.5px Inter,Arial,sans-serif;cursor:pointer;transition:.2s;text-decoration:none}
 .cc-btn:hover{background:var(--a);color:#fff;box-shadow:0 10px 24px rgba(31,35,40,.15)}
 .cc-nav{display:flex;justify-content:center;align-items:center;gap:16px;margin-top:26px}
 .cc-ar{all:unset;box-sizing:border-box;width:40px;height:40px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--bd);background:#fff;color:#59636E;cursor:pointer;transition:.2s}
