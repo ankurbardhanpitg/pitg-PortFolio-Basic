@@ -1,0 +1,895 @@
+/*
+ * ProcessIT Global — Hard-coded / portfolio-details.css
+ * -----------------------------------------------------
+ * LEARNING / REFERENCE extract for designers and beginners.
+ *
+ * What this file styles:
+ *   The portfolio detail layout (sidebar | article | TOC) and every
+ *   content block that lives in portfolio-details.html.
+ *
+ * Hard-coded difference:
+ *   In the sibling folder, JS injects each page into #vp. Here every
+ *   page is already written in the HTML as <section class="page">.
+ *   This CSS only paints them — it does not create elements.
+ *
+ * How to read this file (beginner map):
+ *   1) :root          — colour / theme variables (change these to recolour the page)
+ *   2) Layout shell   — .page / .pgw / .side / .pmain / .toc / .crumb / .ptt / .lede / .nx / .b
+ *   3) Content blocks — cards, KPIs, bars, donuts, maps, accordion (HTML is hard-coded)
+ *   4) Responsive     — breakpoints at 1180 / 980 / 900 / 560 px
+ *
+ * CSS variables a designer will touch most often:
+ *   --fg / --ink  body text
+ *   --mu          muted / grey text
+ *   --bd / --bd2  borders
+ *   --bl / --brand link and brand blues
+ *   --a / --t     per-page accent (set inline on each .page in the HTML)
+ *   --blue / --cy bar-chart gradient colours
+ */
+
+/* ---- Theme variables (shared colours) ---- */
+:root {
+  --fg: #1F2328;       /* main text */
+  --mu: #59636E;       /* muted / secondary text */
+  --bd: #D1D9E0;       /* primary border */
+  --bd2: #E6EAEF;      /* softer border */
+  --sf: #F6F8FA;       /* soft surface / hover fill */
+  --bl: #0969DA;       /* link blue */
+  --brand: #0073DC;    /* brand blue (notes, focus rings) */
+  --ink: #1F2328;      /* strong headings / KPI numbers */
+  --ln: #D1D9E0;       /* alias for border (legacy name) */
+  --soft: #F6F8FA;     /* alias for soft surface */
+  --blue: #2F6BFF;     /* chart / accent blue */
+  --cy: #12B5CB;       /* cyan (bar ends) */
+  --vio: #7B5CFA;      /* violet (column tops) */
+  --cor: #FF6B4A;      /* coral (problem labels) */
+  --mint: #22B07D;     /* mint (solution labels) */
+  --amb: #F59E2B;      /* amber */
+  --rose: #F0567A;     /* rose */
+  --a: #2F6BFF;        /* active accent (each .page overrides inline) */
+  --t: #EAF1FF;        /* soft tint (each .page overrides inline) */
+  color-scheme: light;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 24px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #fff;
+  color: var(--fg);
+  font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+h1, h2, h3, h4, .kp strong {
+  font-family: "Plus Jakarta Sans", Inter, "Helvetica Neue", Arial, sans-serif;
+}
+
+.lbl {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--bd);
+  font: 600 12px Inter, Arial, sans-serif;
+  color: var(--mu);
+  background: #fff;
+  line-height: 20px;
+}
+
+/* ============================================================
+ * LAYOUT SHELL
+ *   .page  = one hard-coded portfolio page (shown/hidden by JS via hash)
+ *   .pgw   = 3-column grid: sidebar | main | TOC
+ *   .side  = left page list (sticky on desktop; <details> on mobile)
+ *   .pmain = centre article
+ *   .toc   = right "On this page" jump links
+ *   .crumb / .ptt / .lede = breadcrumb, title row, subtitle
+ *   .nx    = previous / next page boxes at the bottom
+ *   .b     = one content section (starts hidden, .in fades it in)
+ * ============================================================ */
+
+/* One full detail page. JS removes [hidden] for the active hash. */
+.page[hidden] {
+  display: none !important;
+}
+
+/* Page wrapper: left sidebar | centre article | right TOC */
+.pgw {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 28px;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 220px;  /* side | main | toc */
+  gap: 44px;
+  align-items: start;
+}
+
+/* Left nav — sticks while you scroll the article on desktop */
+.side {
+  position: sticky;
+  top: 16px;
+  padding: 34px 0;
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+}
+
+/* <summary> is hidden on desktop; shown as a toggle on mobile (see @media 980) */
+.side summary { display: none; }
+
+/* Group labels: "Featured" / "More pages" */
+.side h5 {
+  margin: 18px 0 6px;
+  padding: 0 12px;
+  font: 700 12px Inter, Arial, sans-serif;
+  color: var(--mu);
+  letter-spacing: .02em;
+}
+
+.side h5:first-child { margin-top: 0; }
+
+/* One page link in the sidebar */
+.side a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #3D4650;
+  border-left: 2px solid transparent;
+  margin-left: -2px;
+}
+
+/* Coloured dot before each page name (uses --a from the link's inline style) */
+.side a i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--a);
+  flex: none;
+  opacity: .55;
+}
+
+.side a:hover { background: var(--sf); }
+
+/* Active page: soft tint background + accent border + bold text */
+.side a.cur {
+  background: var(--t);
+  color: var(--fg);
+  font-weight: 700;
+  border-left-color: var(--a);
+}
+
+.side a.cur i { opacity: 1; }
+
+/* Centre column — the article itself */
+.pmain {
+  min-width: 0;                /* allow grid child to shrink without overflow */
+  padding: 40px 0 80px;
+}
+
+/* Breadcrumb: ProcessIT Global / Portfolio / Page title */
+.crumb {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--mu);
+  margin-bottom: 18px;
+}
+
+.crumb a { color: var(--bl); }
+.crumb a:hover { text-decoration: underline; }
+.crumb b { color: var(--fg); font-weight: 600; }
+
+/* Title row: big h1 + "Portfolio" / "Featured" badge */
+.ptt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--bd);
+}
+
+.ptt h1 {
+  margin: 0;
+  font-size: clamp(34px, 4.6vw, 56px);  /* scales with viewport */
+  line-height: 1.05;
+  letter-spacing: -.04em;
+  font-weight: 800;
+}
+
+/* Supporting sentence under the title */
+.lede {
+  margin: 20px 0 38px;
+  font-size: 19px;
+  line-height: 1.65;
+  color: #3D4650;
+  max-width: 720px;
+}
+
+/* Right "On this page" TOC — sticky like the sidebar */
+.toc {
+  position: sticky;
+  top: 16px;
+  padding: 40px 0;
+  font-size: 13.5px;
+}
+
+.toc h5 {
+  margin: 0 0 10px;
+  font: 700 12px Inter, Arial, sans-serif;
+  color: var(--fg);
+}
+
+/* Each TOC item is a button that scrolls to a section heading */
+.toc button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 0 6px 14px;
+  margin: 0;
+  background: none;
+  border: 0;
+  border-left: 2px solid var(--bd);
+  color: var(--mu);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.toc button:hover { color: var(--fg); }
+
+/* Current section while scrolling (JS adds .cur) */
+.toc button.cur {
+  color: var(--bl);
+  border-left-color: var(--bl);
+  font-weight: 600;
+}
+
+/* Previous / Next page boxes at the bottom of the article */
+.nx {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 30px;
+  padding: 0;
+}
+
+.nx a {
+  padding: 18px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--bd);
+  background: #fff;
+  transition: .2s;
+}
+
+.nx a:hover {
+  border-color: var(--bl);
+  box-shadow: 0 8px 22px rgba(9, 105, 218, .1);
+}
+
+.nx small {
+  display: block;
+  font-size: 12.5px;
+  color: var(--mu);
+  margin-bottom: 4px;
+}
+
+.nx strong {
+  font: 700 18px "Plus Jakarta Sans", Arial, sans-serif;
+  color: var(--bl);
+  letter-spacing: -.01em;
+}
+
+.nx a:last-child { text-align: right; }  /* "Next" aligns to the right edge */
+
+/*
+ * Content section wrapper.
+ * Starts invisible + slightly lower; JS adds .in when it enters the viewport.
+ */
+.b {
+  margin-bottom: 40px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .6s ease, transform .6s cubic-bezier(.2, .8, .2, 1);
+}
+
+.b.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Pause chart animations until the block is revealed */
+.b:not(.in) * { animation-play-state: paused !important; }
+
+/* Uppercase section label inside a block, e.g. "PRODUCTS AND MODULES BY GROUP" */
+.b h3 {
+  margin: 0 0 14px;
+  font: 700 13px Inter, Arial, sans-serif;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--mu);
+}
+
+/* ============================================================
+ * CONTENT BLOCK COMPONENTS
+ *   These classes style hard-coded HTML written in portfolio-details.html.
+ *   .g2 / .g3  — 2- or 3-column card grids
+ *   .c         — one content card
+ *   .kp        — big number / KPI strip
+ *   .fl        — flow / step row with arrows
+ *   .ch        — chip / pill tags
+ *   .br        — horizontal bar chart row
+ *   .dn / .lgd — donut chart + legend
+ *   .cl        — vertical column chart
+ *   .pr        — mandate → solution pair
+ *   .mp        — map + numbered list
+ *   .nt        — note / callout
+ *   .how-acc   — problem / answer accordion
+ * ============================================================ */
+/* Card / KPI grids — column count comes from the class name */
+.g2, .g3, .kp { display: grid; gap: 14px; }
+.g2 { grid-template-columns: repeat(2, 1fr); }   /* 2-column card grid */
+.g3 { grid-template-columns: repeat(3, 1fr); }   /* 3-column card grid */
+.kp { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+
+/* One content card (title + paragraph) */
+.c {
+  position: relative;
+  padding: 22px;
+  border-radius: 12px;
+  background: var(--p, #fff);  /* --p can tint the card background */
+  border: 1px solid var(--bd);
+  box-shadow: none;
+  transition: transform .25s, box-shadow .25s, border-color .25s;
+}
+
+.c:hover {
+  box-shadow: 0 8px 24px rgba(31, 35, 40, .08);
+  border-color: #9AA4B1;
+  transform: none;
+}
+
+/* When --k is set inline in the HTML, draw a coloured top inset stripe */
+.c[style*="--k"] { box-shadow: inset 0 3px 0 var(--k); }
+
+.c h4 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  line-height: 1.25;
+  letter-spacing: -.015em;
+  font-weight: 700;
+}
+
+.c p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #4A5468;
+}
+
+/* Optional "01 / 02" number above a card title */
+.c .n {
+  display: block;
+  font: 800 12.5px "Plus Jakarta Sans", Arial, sans-serif;
+  color: var(--a);
+  margin-bottom: 12px;
+  letter-spacing: .06em;
+}
+
+/* KPI cell: big number + short label underneath */
+.kp div {
+  padding: 24px 22px;
+  border-radius: 12px;
+  background: var(--p, #F6F8FA);
+  border: 1px solid var(--bd);
+  transition: transform .25s;
+}
+
+.kp div:hover { transform: none; }
+
+.kp strong {
+  display: block;
+  font-size: clamp(36px, 4.4vw, 52px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.kp span {
+  display: block;
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: #4A5468;
+  line-height: 1.4;
+}
+
+/* Flow / step row — cards in a line with → arrows between them */
+.fl { display: flex; gap: 0; align-items: stretch; }
+.fl .c { flex: 1; position: relative; }
+.fl .c + .c { margin-left: 26px; }   /* room for the arrow */
+
+/* Arrow drawn between flow cards (CSS only — no extra HTML) */
+.fl .c:not(:last-child):after {
+  content: "\2192";                  /* → character */
+  position: absolute;
+  right: -26px;
+  top: 50%;
+  margin-top: -15px;
+  width: 26px;
+  text-align: center;
+  font-size: 18px;
+  color: var(--blue);
+  z-index: 2;
+}
+
+/* Pill / chip tags in a wrapping row */
+.ch { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.ch span {
+  padding: 9px 16px;
+  border-radius: 999px;              /* fully rounded pill */
+  font-size: 14px;
+  font-weight: 500;
+  background: #fff;
+  border: 1px solid var(--ln);
+  box-shadow: none;
+  transition: .2s;
+}
+
+.ch span:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: none;
+}
+
+/* Horizontal bar: label | track | value  (see Solutions arsenal) */
+.br {
+  display: grid;
+  grid-template-columns: minmax(120px, 190px) 1fr 52px;
+  gap: 14px;
+  align-items: center;
+  font-size: 14px;
+  margin: 12px 0;
+}
+
+.br div {
+  height: 12px;
+  background: #EEF0F4;               /* empty track */
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Filled portion — width % is set inline in the HTML; grows from the left */
+.br i {
+  display: block;
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--blue), var(--cy));
+  animation: gr 1.2s cubic-bezier(.2, .8, .2, 1) both;
+  transform-origin: left;
+}
+
+@keyframes gr { from { transform: scaleX(0); } }  /* grow animation */
+
+.br em {
+  font-style: normal;
+  text-align: right;
+  font-weight: 700;
+}
+
+/* Donut chart + colour legend beside it */
+.dn {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dn svg {
+  width: 160px;
+  flex: none;
+  transform: rotate(-90deg);         /* first slice starts at 12 o'clock */
+}
+
+.dn circle {
+  fill: none;
+  stroke-width: 5.2;
+  stroke-linecap: butt;
+}
+
+.lgd {
+  flex: 1;
+  min-width: 160px;
+  font-size: 13.5px;
+}
+
+.lgd div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 9px 0;
+}
+
+.lgd i {
+  width: 11px;
+  height: 11px;
+  border-radius: 4px;
+  flex: none;
+}
+
+.lgd b {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+/* Vertical column chart — columns grow upward from the baseline */
+.cl {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  height: 200px;
+}
+
+.cl div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  font-size: 12px;
+  color: var(--mu);
+  text-align: center;
+  gap: 8px;
+}
+
+/* Filled column — height % is set inline in the HTML */
+.cl i {
+  display: block;
+  width: 100%;
+  max-width: 64px;
+  border-radius: 12px 12px 4px 4px;
+  background: linear-gradient(180deg, var(--vio), var(--blue));
+  animation: gu 1.1s cubic-bezier(.2, .8, .2, 1) both;
+  transform-origin: bottom;
+}
+
+@keyframes gu { from { transform: scaleY(0); } }  /* grow upward */
+
+.cl b {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* Mandate → solution pair (left card | arrow | right card) */
+.pr {
+  display: grid;
+  grid-template-columns: 1fr 34px 1fr;
+  gap: 6px;
+  align-items: stretch;
+  margin-bottom: 12px;
+}
+
+.pr > span {
+  display: grid;
+  place-items: center;
+  color: var(--blue);
+  font-size: 18px;
+}
+
+.pr .c:first-child { --p: #FFF8F5; }   /* warm tint = mandate side */
+.pr .c:last-child { --p: #F3FBF6; }    /* cool tint = solution side */
+.pr .c:first-child .n { color: var(--cor); }
+.pr .c:last-child .n { color: var(--mint); }
+
+/* Map block: SVG on top, numbered legend list underneath */
+.mp {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.mp svg {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: none;
+  border: 0;
+  overflow: visible;
+}
+
+/* Land-shape path fills (.ld / .h2 / .hl — written on SVG paths in the HTML) */
+.mp svg path.ld {
+  fill: #E3E8F1;                     /* main land */
+  stroke: #fff;
+  stroke-width: .9;
+}
+
+.mp svg path.hl {
+  fill: #C9DCFF;                     /* highlight region */
+  stroke: #fff;
+  stroke-width: .9;
+}
+
+.mp svg path.h2 {
+  fill: #DCE7FB;                     /* secondary highlight */
+  stroke: #fff;
+  stroke-width: .9;
+}
+
+/* Panel label text inside the SVG, e.g. "INDIA" */
+.mp svg .pl {
+  font: 700 10.5px Inter, Arial, sans-serif;
+  letter-spacing: .14em;
+  fill: #8A93A6;
+}
+
+/* Pulsing ring behind each map pin */
+.mp svg .pu {
+  opacity: .35;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mp 2.6s ease-out infinite;
+}
+
+@keyframes mp {
+  from { transform: scale(.8); opacity: .5; }
+  to { transform: scale(2.1); opacity: 0; }
+}
+
+/* Numbered legend under the map (3 columns on desktop) */
+.mp ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 3;
+  gap: 26px;
+  font-size: 14px;
+}
+
+.mp li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin-bottom: 12px;
+  break-inside: avoid;
+  font-weight: 600;
+}
+
+/* Coloured number badge (background set inline in the HTML) */
+.mp li b {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 10.5px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.mp li small {
+  display: block;
+  color: var(--mu);
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* Highlighted callout / note strip */
+.nt {
+  padding: 22px 26px;
+  border-radius: 12px;
+  background: #F6F8FA;
+  border: 1px solid var(--bd);
+  border-left: 4px solid var(--brand);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+ * PROBLEM / ANSWER ACCORDION (.how-acc)
+ *   Native <details>/<summary>. Closed = problem (warm).
+ *   Open = answer (mint). Custom +/- circle replaces the default triangle.
+ * ============================================================ */
+.how-acc {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.how-acc details {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: min-content;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.how-acc summary {
+  list-style: none;
+  cursor: pointer;
+  position: relative;
+  padding: 22px 52px 22px 22px;
+  background: #FFF8F5;
+}
+
+.how-acc summary::-webkit-details-marker { display: none; }
+.how-acc summary::marker { content: ""; }
+
+.how-acc summary::after {
+  content: "+";
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--bd);
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  font: 600 16px/1 Inter, Arial, sans-serif;
+  color: var(--fg);
+}
+
+.how-acc details[open] summary::after { content: "\2212"; }
+
+.how-acc summary:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+.how-acc .how-k {
+  display: block;
+  margin-bottom: 12px;
+  font: 800 12.5px "Plus Jakarta Sans", Arial, sans-serif;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.how-acc summary .how-k { color: var(--cor); }
+
+.how-acc .how-q {
+  display: block;
+  margin: 0 0 8px;
+  font: 700 17px/1.25 "Plus Jakarta Sans", Arial, sans-serif;
+  letter-spacing: -.015em;
+  color: var(--fg);
+}
+
+.how-acc .how-d {
+  display: block;
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #4A5468;
+}
+
+.how-acc .how-a {
+  padding: 18px 22px 22px;
+  background: #F3FBF6;
+  border-top: 1px solid var(--bd2);
+}
+
+.how-acc .how-a .how-k {
+  color: var(--mint);
+  margin-bottom: 8px;
+}
+
+.how-acc .how-a p {
+  margin: 0;
+  font: 700 17px/1.3 "Plus Jakarta Sans", Arial, sans-serif;
+  letter-spacing: -.015em;
+  color: var(--fg);
+}
+
+.how-acc details[open] {
+  box-shadow: 0 8px 24px rgba(31, 35, 40, .08);
+}
+
+/* ============================================================
+ * RESPONSIVE BREAKPOINTS
+ *   1180px — hide the right TOC; keep sidebar + main
+ *   980px  — single column; sidebar becomes a <details> toggle
+ *   900px  — stack card grids / flow / pairs vertically
+ *   560px  — prev/next boxes stack
+ * ============================================================ */
+
+/* Large tablets: drop the TOC so the article has more width */
+@media (max-width: 1180px) {
+  .pgw { grid-template-columns: 240px minmax(0, 1fr); }
+  .toc { display: none; }
+}
+
+/* Phones / small tablets: one column; sidebar collapses behind a summary */
+@media (max-width: 980px) {
+  .pgw {
+    grid-template-columns: 1fr;
+    padding: 0 20px;
+  }
+
+  .side {
+    position: static;              /* no longer sticky */
+    max-height: none;
+    padding: 18px 0 0;
+  }
+
+  /* Show the "Portfolio pages" toggle button */
+  .side summary {
+    display: block;
+    padding: 10px 14px;
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--sf);
+  }
+
+  .side .sl-in { padding-top: 10px; }
+}
+
+/* Narrow screens: stack multi-column blocks */
+@media (max-width: 900px) {
+  .g2, .g3, .mp, .pr { grid-template-columns: 1fr; }
+  .pr > span { transform: rotate(90deg); }   /* arrow points down when stacked */
+  .how-acc { flex-direction: column; }
+  .how-acc details { flex: 1 1 auto; }
+  .fl {
+    flex-direction: column;
+    gap: 26px;
+  }
+  .fl .c + .c { margin-left: 0; }
+  /* Flow arrow becomes ↓ between stacked cards */
+  .fl .c:not(:last-child):after {
+    content: "\2193";
+    right: 50%;
+    top: auto;
+    bottom: -27px;
+    margin: 0 -13px 0 0;
+  }
+  .mp ol { columns: 1; }
+}
+
+@media (max-width: 560px) {
+  .nx { grid-template-columns: 1fr; }   /* prev / next stack vertically */
+}
+
+/* Accessibility: respect "reduce motion" OS setting */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition-duration: .01s !important;
+  }
+  html { scroll-behavior: auto; }
+  .b {
+    opacity: 1;                    /* show blocks immediately, no fade-in */
+    transform: none;
+  }
+}
