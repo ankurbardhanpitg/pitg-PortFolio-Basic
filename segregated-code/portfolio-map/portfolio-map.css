@@ -5,97 +5,139 @@
  * Source: styles.css (hero window + .hv SVG styles).
  * Live site still loads styles.css; this file is not linked from home.html.
  *
- * Covers:
- * - .gh-win  window chrome (border, shadow, white panel)
- * - .gh-wb   title bar ("pitg / portfolio-map" + traffic-light dots)
- * - .gh-wc   content padding + SVG sizing
- * - .hv      dashed edges, rings, label hover for the circular map
+ * What this file styles:
+ *   The chrome "window" that holds the circular portfolio map in the hero.
+ *   Think of it as a fake browser / IDE window with a title bar and content.
+ *
+ * How to read this file (beginner map):
+ *   1) :root / body   — page colours and base setup for this extract
+ *   2) .gh-win        — outer white window frame (border, shadow, size)
+ *   3) .gh-wb         — title bar (grey dots + "pitg / portfolio-map" text)
+ *   4) .gh-wc         — padding around the SVG map
+ *   5) .hv …          — SVG lines, ring, and label hover effects
+ *
+ * HTML this CSS expects (see portfolio-map.html):
+ *   .gh-win > .gh-wb + .gh-wc.hv#hv
+ *   The SVG inside #hv is drawn by portfolio-map.js.
+ *
+ * Tip for designers:
+ *   Change --bd / --sf / shadow to restyle the window chrome.
+ *   Change .hv stroke colours to restyle the map lines.
  */
 
+/* ---- Theme variables (shared colours for this extract) ---- */
 :root {
-  --fg: #1F2328;
-  --mu: #59636E;
-  --bd: #D1D9E0;
-  --sf: #F6F8FA;
+  --fg: #1F2328;   /* main text colour */
+  --mu: #59636E;   /* muted / grey text (title bar label) */
+  --bd: #D1D9E0;   /* border colour for the window */
+  --sf: #F6F8FA;   /* soft fill for the title bar */
 }
 
-* { box-sizing: border-box; }
+/* Make padding/border count inside width/height for every element */
+* {
+  box-sizing: border-box;
+}
 
+/* Page backdrop for this standalone extract (not used on the live site) */
 body {
   margin: 0;
   padding: 24px;
-  background: #F4F8FF;
+  background: #F4F8FF;   /* light blue page behind the window */
   font-family: Inter, "Helvetica Neue", Arial, sans-serif;
   color: var(--fg);
 }
 
-/* Window shell — copied from styles.css .gh-win */
+/* ============================================================
+ * WINDOW SHELL (.gh-win)
+ *   The white rounded card that looks like a small app window.
+ *   Max-width keeps it readable when the extract is opened alone.
+ * ============================================================ */
 .gh-win {
   position: relative;
   width: 100%;
-  max-width: 780px;
-  margin: 0 auto;
+  max-width: 780px;          /* do not stretch too wide in the extract */
+  margin: 0 auto;            /* centre the window on the page */
   border: 1px solid var(--bd);
-  border-radius: 14px;
+  border-radius: 14px;       /* soft rounded corners */
   background: #fff;
   box-shadow:
-    0 40px 90px rgba(31, 35, 40, .13),
-    0 2px 6px rgba(31, 35, 40, .04);
-  overflow: hidden;
+    0 40px 90px rgba(31, 35, 40, .13),   /* soft drop shadow */
+    0 2px 6px rgba(31, 35, 40, .04);     /* tiny near-edge shadow */
+  overflow: hidden;          /* clips children to the rounded corners */
   text-align: left;
 }
 
-/* Title bar — copied from styles.css .gh-wb */
+/* ============================================================
+ * TITLE BAR (.gh-wb)
+ *   Grey strip at the top with three "traffic light" dots and a label.
+ *   The <i> tags are the dots; the <span> is the window title text.
+ * ============================================================ */
 .gh-wb {
-  display: flex;
+  display: flex;             /* dots + title in one horizontal row */
   align-items: center;
-  gap: 7px;
+  gap: 7px;                  /* space between the three dots */
   padding: 11px 16px;
   background: var(--sf);
   border-bottom: 1px solid var(--bd);
 }
 
+/* One traffic-light dot (there are three <i> elements in the HTML) */
 .gh-wb i {
   width: 11px;
   height: 11px;
-  border-radius: 50%;
+  border-radius: 50%;        /* makes a circle */
   background: #D1D9E0;
 }
 
+/* Window title text, e.g. "pitg / portfolio-map" */
 .gh-wb span {
-  margin-left: 10px;
+  margin-left: 10px;         /* gap after the dots */
   font: 500 12.5px ui-monospace, SFMono-Regular, Menlo, monospace;
   color: var(--mu);
 }
 
-/* Map mount — copied from styles.css .gh-wc */
+/* ============================================================
+ * MAP MOUNT (.gh-wc)
+ *   Padding around the SVG. The SVG itself is injected by JS into #hv.
+ * ============================================================ */
 .gh-wc {
   padding: 6px 18px 16px;
 }
 
+/* Make the SVG fill the window width and keep its aspect ratio */
 .gh-wc svg {
   width: 100%;
   height: auto;
   display: block;
-  overflow: visible;
+  overflow: visible;         /* allow label pills to peek slightly outside */
   max-height: 420px;
 }
 
-/* Circular map SVG — copied from styles.css .hv … */
+/* ============================================================
+ * CIRCULAR MAP SVG (.hv …)
+ *   Classes used on elements INSIDE the SVG (drawn by portfolio-map.js):
+ *     .ed   — dashed curved spoke from the ring to a label
+ *     .ring — dashed ellipse around the centre logo
+ *     .lb   — label pill group (rounded rect + title text)
+ * ============================================================ */
+
+/* Dashed curved edges (spokes) from the inner ring to each page label */
 .hv .ed {
-  stroke: #CBD3E1;
+  stroke: #CBD3E1;           /* line colour */
   stroke-width: 1.3;
-  stroke-dasharray: 2 7;
+  stroke-dasharray: 2 7;     /* short dash, longer gap → dotted look */
   stroke-linecap: round;
-  fill: none;
+  fill: none;                /* lines only, no filled shape */
 }
 
+/* Dashed ellipse around the centre logo */
 .hv .ring {
   fill: none;
   stroke: #DDE3EE;
   stroke-dasharray: 3 9;
 }
 
+/* Label pill: scale up slightly on hover (transform-box keeps SVG coords correct) */
 .hv a .lb {
   transition: transform .25s;
   transform-box: fill-box;
@@ -103,13 +145,15 @@ body {
 }
 
 .hv a:hover .lb {
-  transform: scale(1.06);
+  transform: scale(1.06);    /* grow ~6% when the mouse is over the link */
 }
 
+/* Default pill background */
 .hv a .lb rect {
   fill: #fff;
 }
 
+/* Slightly grey fill on hover so the pill feels interactive */
 .hv a:hover .lb rect {
   fill: #FAFBFC;
 }

@@ -1,0 +1,1125 @@
+/**
+ * ProcessIT Global — portfolio-details.js
+ * ---------------------------------------
+ * COPIED EXTRACT for designers / reference only.
+ * Source: script.js → PG[] page model, block renderers R{}, GEO maps,
+ * and showPage() / hash routing that fills #vp.
+ * Live site still runs script.js; this file is not loaded from home.html.
+ *
+ * Big picture (read this first):
+ *   1. PG[] holds the text and charts for every portfolio detail page.
+ *   2. Helper functions (E, T, card) + R{} turn that data into HTML.
+ *   3. showPage(p) builds the whole detail layout into #vp:
+ *        left sidebar  |  main article  |  right "On this page" TOC
+ *   4. The browser hash (#arsenal, #track, …) picks which page to show.
+ *
+ * HTML this script expects (see portfolio-details.html):
+ *   #vp — empty mount; everything you see is injected here by showPage()
+ *
+ * CSS classes that shape the layout (see portfolio-details.css):
+ *   .pgw   — 3-column page wrapper (sidebar | main | TOC)
+ *   .side  — left list of portfolio pages
+ *   .pmain — main article (breadcrumb, title, blocks, prev/next)
+ *   .toc   — right "On this page" jump links
+ *   .b     — one content block (fades in when scrolled into view)
+ *
+ * Tip for designers:
+ *   Change wording / numbers inside PG[] below.
+ *   You usually do not need to edit showPage() or the renderers.
+ *
+ * Default page with no hash: arsenal (Solutions arsenal).
+ */
+
+/* ============================================================
+ * 1) THEME HELPERS
+ *    Colours and labels reused by charts and product-family cards.
+ * ============================================================ */
+
+/** Colour palette for donut chart slices (cycles if more slices than colours). */
+var PAL = ["#2F6BFF", "#12B5CB", "#7B5CFA", "#F59E2B", "#22B07D", "#F0567A"];
+
+/**
+ * Product-family tags → [accent colour, full label].
+ * Used when a card has a short code like "nq" or "sf" (see Functions page).
+ * The accent becomes CSS variable --k (coloured top inset on the card).
+ */
+var TG = {
+  nq: ["#2F6BFF", "OpenText NetIQ"],
+  sf: ["#12B5CB", "Silverfort"],
+  vt: ["#22B07D", "OpenText Voltage"],
+  fo: ["#7B5CFA", "Fortify"],
+  so: ["#F59E2B", "SOC platforms"]
+};
+
+/**
+ * City name → [latitude, longitude].
+ * Used by map blocks to place numbered markers on the India / SEA map.
+ */
+var C = {
+  "Kolkata": [22.57, 88.36],
+  "Mumbai": [19.07, 72.88],
+  "Ranchi": [23.35, 85.33],
+  "Dahod": [22.84, 74.26],
+  "Agra": [27.18, 78.0],
+  "Bhagalpur": [25.24, 86.97],
+  "Muzaffarpur": [26.12, 85.39],
+  "Bareilly": [28.37, 79.43],
+  "Goa": [15.5, 73.8],
+  "Moradabad": [28.84, 78.77],
+  "Ahmedabad": [23.02, 72.57],
+  "Singapore": [1.35, 103.82],
+  "Kuala Lumpur": [3.14, 101.69],
+  "Bangkok": [13.75, 100.5],
+  "Jakarta": [-6.2, 106.8]
+};
+
+/** Reusable capability chips on the Data security page. */
+var CAPS = [
+  "Encryption at rest and in motion",
+  "Format-preserving encryption",
+  "Tokenisation",
+  "Key management and rotation",
+  "Masking and hashing",
+  "REST API integration",
+  "GDPR and Indian compliance"
+];
+
+/* ============================================================
+ * 2) PAGE CONTENT MODEL (PG)
+ *    One object per portfolio detail page.
+ *
+ *    Fields a beginner should know:
+ *      k  = short key / hash id          e.g. "arsenal"  →  #arsenal
+ *      t  = page title                   e.g. "Solutions arsenal"
+ *      s  = lede (subtitle under title)
+ *      b  = list of "blocks" that make up the article body
+ *
+ *    Each block is an array starting with a type name:
+ *      ["kp", …]     big key numbers / stats
+ *      ["chips", …]  pill tags
+ *      ["cards", …]  content cards in a grid
+ *      ["bars", …]   horizontal bar chart
+ *      ["cols", …]   vertical column chart
+ *      ["donut", …]  donut chart + legend
+ *      ["map", …]    location map + numbered list
+ *      ["flow", …]   step / flow cards in a row
+ *      ["acc", …]    accordion (problem → answer)
+ *      ["pairs", …]  mandate → solution rows
+ *      ["note", …]   highlighted callout note
+ *      ["row", …]    two blocks side by side
+ *
+ *    Tip: edit the text inside PG to change what a page says.
+ * ============================================================ */
+var PG = [
+  {
+    k: "what",
+    t: "What PITG does",
+    s: "Architected with a consulting lens, delivered with engineering rigour, maintained with operational discipline.",
+    b: [
+      ["flow", [
+        ["01", "Consult", "Assess the estate, design the target architecture, map controls to RBI needs."],
+        ["02", "Engineer", "Implement Tier-1 platforms and build the custom connectors OEMs will not."],
+        ["03", "Operate", "Run, support and monitor: managed IAM operations and SOC services."]
+      ]],
+      ["chips", "Four verbs behind every engagement", ["Design", "Integrate", "Operationalise", "Simplify"]],
+      ["kp", [
+        ["40+", "IAM and IGA projects"],
+        ["27+", "Implementations"],
+        ["10+", "Advisory"],
+        ["1M+", "Identities covered"],
+        ["55+", "Professionals"],
+        ["3", "Countries"]
+      ]],
+      ["row", [
+        ["bars", "Delivery footprint (projects)", [
+          ["IAM and IGA", 40],
+          ["Implementations", 27],
+          ["Advisory", 10]
+        ], "+"],
+        ["cards", "Profile", [
+          ["IAM-first", "Cybersecurity architecture and managed-security firm."],
+          ["OpenText partner", "System integrator and partner."],
+          ["Certified", "ISO 27001:2022, DPIIT-recognised."],
+          ["40% growth", "Three-year CAGR."]
+        ], 2]
+      ]]
+    ]
+  },
+  {
+    k: "problem",
+    t: "The problem",
+    s: "Why standard security engines fail in production, and what PITG builds in response.",
+    b: [
+      ["acc", "", [
+        ["Mass-market OEMs", "Vendors do not write custom code for unique networks.", "Bespoke R&D connectors, drivers and dashboards."],
+        ["Legacy burden", "Air-gapped and 15+ year-old systems resist Tier-1 tools.", "An integration fabric that bridges legacy and modern."],
+        ["AI threat vector", "Non-human identities leave endpoint tools exposed.", "Identity-led controls and ITDR for human and AI identities."]
+      ], "Problem", "PITG answer"],
+      ["note", "Where products stop, PITG engineering starts: custom code, bridged legacy estates and identity as the control plane."]
+    ]
+  },
+  {
+    k: "business",
+    t: "Lines of business",
+    s: "Four lines of business, one identity-led architecture.",
+    b: [
+      ["cards", "", [
+        ["01 Human and AI-agent identity security", "IAM, IGA, PAM, MFA, ITDR. OpenText NetIQ, Silverfort."],
+        ["02 Data and application security", "Encryption, tokenisation, code review. OpenText Voltage, Fortify."],
+        ["03 Tier-1 managed enterprise SOC", "SIEM, SOAR, UEBA, NTA, VAPT, EDR. Splunk, ArcSight."],
+        ["04 Proprietary MSME SOC", "Enterprise-grade defence for MSMEs. In-house, open-source."]
+      ], 2],
+      ["flow", [
+        ["Identity", "Who or what is acting"],
+        ["Data and apps", "What is being touched"],
+        ["Operations", "What is happening, now"]
+      ]]
+    ]
+  },
+  {
+    k: "functions",
+    t: "Functionalities",
+    s: "What the portfolio does in practice, and the platform behind each capability.",
+    b: [
+      ["row", [
+        ["donut", "Capabilities by platform", [
+          ["OpenText NetIQ", 4],
+          ["Silverfort", 2],
+          ["OpenText Voltage", 1],
+          ["Fortify", 1],
+          ["SOC platforms", 1]
+        ]],
+        ["chips", "Platform key", ["OpenText NetIQ", "Silverfort", "OpenText Voltage", "Fortify", "SOC platforms"]]
+      ]],
+      ["cards", "", [
+        ["Lifecycle and governance", "Joiner-mover-leaver, access reviews. NetIQ IDM, IGA.", "nq"],
+        ["Access and SSO", "Policy-based access, hybrid estates. NetIQ Access Manager.", "nq"],
+        ["Strong authentication, Zero Trust", "MFA incl. hardware TOTP tokens. Advanced Authentication, Silverfort.", "sf"],
+        ["Privileged access", "Admin and shared account control. NetIQ PAM.", "nq"],
+        ["AD management", "Administration and change auditing. NetIQ AD suite, Change Guardian.", "nq"],
+        ["Identity threat defence", "Non-human identity, AD, ITDR. Silverfort.", "sf"],
+        ["Data protection", "Encryption, tokenisation, masking. OpenText Voltage.", "vt"],
+        ["Application assurance", "Code review, secure SDLC. Fortify.", "fo"],
+        ["Threat monitoring", "SIEM, SOAR, UEBA, forensic logs. Splunk, ArcSight, PITG SOC.", "so"]
+      ], 3]
+    ]
+  },
+  {
+    k: "features",
+    t: "Key features",
+    s: "What sets the PITG delivery apart.",
+    b: [
+      ["cards", "", [
+        ["Bespoke R&D integration", "Custom connectors, drivers and dashboards where OEMs stop."],
+        ["Legacy and air-gapped ready", "Bridges 15+ year-old and offline systems to Tier-1 engines."],
+        ["Identity-led architecture", "Unified outcomes, not fragmented point products."],
+        ["Operational lock-in", "A solidified integration layer for dependable operations."],
+        ["Compliance mapped", "RBI controls mapped to audit-ready evidence."],
+        ["Sovereign-cleared record", "Defence, health, finance and a state SOC delivered."]
+      ], 3, 1]
+    ]
+  },
+  {
+    /* This is the page shown in the reference screenshot (and the default hash). */
+    k: "arsenal",
+    t: "Solutions arsenal",
+    s: "Platforms PITG consults on, implements and operates, grouped by capability.",
+    b: [
+      ["bars", "Products and modules by group", [
+        ["Identity and Access", 5],
+        ["AD Management", 3],
+        ["Identity Defence", 4],
+        ["Data Security", 5],
+        ["App Security", 3],
+        ["Security Ops", 7]
+      ], ""],
+      ["cards", "", [
+        ["Identity and Access", "OpenText NetIQ: Identity Manager, Identity Governance, Access Manager, Advanced Authentication, PAM."],
+        ["AD Management", "OpenText NetIQ: AD Management, Change Guardian, eDirectory."],
+        ["Identity Defence", "Silverfort: Universal MFA, non-human identity, AD protection, ITDR."],
+        ["Data Security", "OpenText Voltage: SecureData, Fusion SaaS, SecureMail, Structured Data, FPE, tokenisation."],
+        ["App Security", "Fortify: code review, AppSec testing, SDLC mapping."],
+        ["Security Ops", "Splunk, ArcSight, PITG: SIEM, SOAR, UEBA, threat intel, NTA, VAPT and EDR, MSME SOC."]
+      ], 3]
+    ]
+  },
+  {
+    k: "track",
+    t: "Track record",
+    s: "Delivered for sovereign, defence and regulated clients where technical entry barriers are restrictive.",
+    b: [
+      ["kp", [
+        ["250K+", "Largest IAM programme"],
+        ["1M+", "Identities covered"],
+        ["34", "Named clients across 5 sectors"]
+      ]],
+      ["row", [
+        ["donut", "IAM engagements by segment (%)", [
+          ["Central and State Govt", 33],
+          ["Defence and Armed Forces", 33],
+          ["BFSI", 20],
+          ["Utilities and PSU", 8],
+          ["Smart Cities", 6]
+        ]],
+        ["cols", "Identities covered (thousands)", [
+          ["Govt", 300],
+          ["Defence", 300],
+          ["BFSI", 200],
+          ["Utilities", 100],
+          ["PSUs", 100]
+        ], "K+"]
+      ]],
+      ["bars", "Largest IAM programmes by users (thousands)", [
+        ["NHA", 250],
+        ["Indian Army UNMS", 140],
+        ["PNB (advisory)", 90],
+        ["FIU-IND (advisory)", 50],
+        ["Central Bank of India", 36],
+        ["SMFG India Credit", 30],
+        ["OFB", 25],
+        ["BMC", 25]
+      ], "K"],
+      /* map markers: [city, label, note, colourIndex] — colourIndex 0/1/2 → blue/amber/cyan */
+      ["map", "Municipal and international footprint", [
+        ["Mumbai", "BMC", "Urban", 0],
+        ["Ranchi", "Ranchi", "Urban", 0],
+        ["Dahod", "Dahod", "Urban", 0],
+        ["Agra", "Agra", "Urban", 0],
+        ["Bhagalpur", "Bhagalpur", "Urban", 0],
+        ["Muzaffarpur", "Muzaffarpur", "Urban", 0],
+        ["Bareilly", "Bareilly", "Urban", 0],
+        ["Goa", "Goa", "Urban", 0],
+        ["Moradabad", "Moradabad", "Urban", 0],
+        ["Ahmedabad", "Ahmedabad", "Urban", 0],
+        ["Kolkata", "West Bengal State SOC", "Marker at state capital", 1],
+        ["Singapore", "Razer, Synapxe, UOB, Mizuho", "Singapore", 2],
+        ["Kuala Lumpur", "CelcomDigi", "Malaysia", 2]
+      ]],
+      ["bars", "Named clients by sector", [
+        ["Central govt and defence", 7],
+        ["BFSI", 9],
+        ["Utilities and PSU", 2],
+        ["Urban and smart cities", 11],
+        ["International", 5]
+      ], ""],
+      ["cards", "Clients by sector", [
+        ["Central govt and defence", "NHA, Indian Army, BEL (IAF), OFB, NTRO, CRIS, FIU-IND."],
+        ["BFSI", "Central Bank of India, UCO Bank, PSB, SIB, CCIL, SMFG India, Aviva, Ageas Federal, PNB."],
+        ["Utilities and PSU", "Coal India Limited, UPRVUNL."],
+        ["Urban and smart cities", "BMC, MPSEDC, Ranchi, Dahod, Agra, Bhagalpur, Muzaffarpur, Bareilly, Goa, Moradabad, Ahmedabad."],
+        ["International", "Razer, Synapxe, UOB, Mizuho Bank (Singapore), CelcomDigi (Malaysia)."]
+      ], 2]
+    ]
+  },
+  {
+    k: "data",
+    t: "Data security",
+    s: "Sensitive data protected at rest and in motion across India and Southeast Asia, on OpenText Voltage.",
+    b: [
+      ["row", [
+        ["donut", "Voltage customers by segment (%)", [
+          ["Foreign Govt and Autonomous", 48.8],
+          ["Smart Cities", 35],
+          ["BFSI", 16.2]
+        ]],
+        ["chips", "Core capabilities", CAPS]
+      ]],
+      ["map", "Implementation footprint", [
+        ["Singapore", "Razer, Synapxe, UOB", "Fusion SaaS, SDA, SecureMail", 2],
+        ["Kuala Lumpur", "CelcomDigi, UOB", "SDA on-premise", 2],
+        ["Bangkok", "UOB", "SecureMail upgrade", 2],
+        ["Jakarta", "UOB", "SecureMail upgrade", 2],
+        ["Bareilly", "Bareilly Smart City", "SDA", 0],
+        ["Bhagalpur", "Bhagalpur", "SDA", 0],
+        ["Muzaffarpur", "Muzaffarpur", "SDA", 0]
+      ]],
+      ["cards", "Implementations", [
+        ["Razer Inc. (SG)", "Fusion SaaS: SharePoint monitoring, ROT data, MPIP."],
+        ["CelcomDigi (MY)", "SDA on-premise: FPE, tokenisation, REST API, Vertica."],
+        ["Synapxe (SG health)", "SDA and structured data: PII/PHI protection, masking, key rotation."],
+        ["UOB", "SecureMail upgrade v7.7 to v24.3.1 across SG, TH, MY, ID."],
+        ["Bareilly Smart City", "SDA: encryption, key management, masking."],
+        ["Bhagalpur, Muzaffarpur", "SDA: compliance, key rotation, masking."]
+      ], 3]
+    ]
+  },
+  {
+    k: "bfsi",
+    t: "BFSI compliance",
+    s: "RBI mandates mapped to PITG solutions.",
+    b: [
+      ["kp", [
+        ["6", "RBI mandates mapped"],
+        ["ISO", "27001:2022 certified"],
+        ["2-6 h", "Disclosure alignment"]
+      ]],
+      ["pairs", "", [
+        ["Identity security (Control 19)", "", "NetIQ Identity Manager and Governance; Silverfort MFA and ITDR."],
+        ["Hybrid cloud unification", "", "Single identity fabric with Zero-Trust authentication."],
+        ["Data leak prevention", "", "Voltage encryption and tokenisation."],
+        ["Secure SDLC", "", "Fortify code review and lifecycle mapping."],
+        ["Continuous monitoring", "", "SIEM, SOAR, UEBA; 2-to-6 hour disclosure alignment."],
+        ["Vendor risk management", "", "ISO 27001:2022 certified, profitable, sovereign-cleared."]
+      ], "RBI mandate", "PITG solution"]
+    ]
+  },
+  {
+    k: "ecosystem",
+    t: "Ecosystem",
+    s: "Flexible engagement models and a strong SI partner network.",
+    b: [
+      ["flow", [
+        ["Direct", "Consulting, custom architecture and end-to-end delivery."],
+        ["Sub-contracting", "Niche cybersecurity delivery under global SI master agreements."]
+      ]],
+      ["chips", "SI partners", ["HPE", "LTI Mindtree", "Blackbox", "Tata Communications"]],
+      ["cards", "Why PITG", [
+        ["No vendor lock-in", "Agnostic R&D keeps workloads portable."],
+        ["Frictionless audits", "One compliance library, single-pane proof."],
+        ["Sovereign trust", "West Bengal State SOC, defence and finance clients."]
+      ], 3, 1]
+    ]
+  }
+];
+
+/* ============================================================
+ * 3) HTML HELPERS
+ *    Small utilities that turn plain text / data into safe HTML.
+ * ============================================================ */
+
+/**
+ * Escape special characters so user/content text cannot break the HTML.
+ * Example: "A < B" becomes "A &lt; B"
+ */
+function E(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+}
+
+/**
+ * Optional section heading inside a content block.
+ * Empty / falsy title → returns "" (no heading drawn).
+ */
+function T(t) {
+  return t ? "<h3>" + E(t) + "</h3>" : "";
+}
+
+/**
+ * One content card: title + paragraph (+ optional accent / number).
+ *
+ *   c[0] = title
+ *   c[1] = body text
+ *   c[2] = optional product code ("nq", "sf", …) → coloured top edge
+ *   num  = true → show a "01 / 02 / 03" badge above the title
+ */
+function card(c, i, num) {
+  var accentStyle =
+    c[2] && TG[c[2]] ? ' style="--k:' + TG[c[2]][0] + '"' : "";
+  var numberBadge = num
+    ? '<span class="n">' + ("0" + (i + 1)).slice(-2) + "</span>"
+    : "";
+
+  return (
+    '<div class="c"' + accentStyle + ">" +
+    numberBadge +
+    "<h4>" + E(c[0]) + "</h4>" +
+    "<p>" + E(c[1]) + "</p>" +
+    "</div>"
+  );
+}
+
+/* ============================================================
+ * 4) BLOCK RENDERERS (R)
+ *    R is a dictionary: block type name → function that returns HTML.
+ *    blk() looks up R[type] and calls it with the remaining arguments.
+ *
+ *    Think of these as "templates written in JavaScript".
+ * ============================================================ */
+var R = {
+  /** Big number stats, e.g. "40+" / "IAM and IGA projects" */
+  kp: function (a) {
+    return (
+      '<div class="kp">' +
+      a.map(function (x) {
+        return (
+          "<div><strong>" + E(x[0]) + "</strong>" +
+          "<span>" + E(x[1]) + "</span></div>"
+        );
+      }).join("") +
+      "</div>"
+    );
+  },
+
+  /**
+   * Flow / step cards in a horizontal row with arrows between them.
+   * Items can be [title, body] or [number, title, body].
+   */
+  flow: function (a) {
+    return (
+      '<div class="fl">' +
+      a.map(function (c, i) {
+        // length > 2 means [number, title, body] → show the number badge
+        return c.length > 2 ? card([c[1], c[2]], i, 1) : card(c, i, 0);
+      }).join("") +
+      "</div>"
+    );
+  },
+
+  /** Rounded pill tags in a wrapping row */
+  chips: function (t, a) {
+    return (
+      T(t) +
+      '<div class="ch">' +
+      a.map(function (x) {
+        return "<span>" + E(x) + "</span>";
+      }).join("") +
+      "</div>"
+    );
+  },
+
+  /** Highlighted callout / note strip */
+  note: function (t) {
+    return '<div class="nt">' + E(t) + "</div>";
+  },
+
+  /**
+   * Grid of content cards.
+   *   n   = columns (2 → .g2, 3 → .g3); defaults to 2
+   *   num = true → number each card 01, 02, …
+   */
+  cards: function (t, a, n, num) {
+    return (
+      T(t) +
+      '<div class="g' + (n || 2) + '">' +
+      a.map(function (c, i) {
+        return card(c, i, num);
+      }).join("") +
+      "</div>"
+    );
+  },
+
+  /**
+   * Mandate → solution pairs (left card, arrow, right card).
+   *   l1 / l2 = small labels on each side (e.g. "RBI mandate" / "PITG solution")
+   */
+  pairs: function (t, a, l1, l2) {
+    return (
+      T(t) +
+      a.map(function (p) {
+        return (
+          '<div class="pr">' +
+          '<div class="c"><span class="n">' + l1 + "</span>" +
+          "<h4>" + E(p[0]) + "</h4>" +
+          (p[1] ? "<p>" + E(p[1]) + "</p>" : "") +
+          "</div>" +
+          "<span>\u2192</span>" +
+          '<div class="c"><span class="n">' + l2 + "</span>" +
+          "<h4>" + E(p[2]) + "</h4></div>" +
+          "</div>"
+        );
+      }).join("")
+    );
+  },
+
+  /**
+   * Expandable accordion: click a row to reveal the answer.
+   *   l1 = label on the closed summary (e.g. "Problem")
+   *   l2 = label on the open panel     (e.g. "PITG answer")
+   */
+  acc: function (t, a, l1, l2) {
+    return (
+      T(t) +
+      '<div class="how-acc">' +
+      a.map(function (p) {
+        return (
+          "<details>" +
+          "<summary>" +
+          '<span class="how-k">' + E(l1) + "</span>" +
+          '<span class="how-q">' + E(p[0]) + "</span>" +
+          (p[1] ? '<span class="how-d">' + E(p[1]) + "</span>" : "") +
+          "</summary>" +
+          '<div class="how-a">' +
+          '<span class="how-k">' + E(l2) + "</span>" +
+          "<p>" + E(p[2]) + "</p>" +
+          "</div>" +
+          "</details>"
+        );
+      }).join("") +
+      "</div>"
+    );
+  },
+
+  /**
+   * Horizontal bar chart.
+   *   a = [[label, value], …]
+   *   u = unit suffix shown after the number (e.g. "" or "K" or "+")
+   * Bar width is value / maxValue * 100%.
+   */
+  bars: function (t, a, u) {
+    var max = Math.max.apply(
+      null,
+      a.map(function (r) {
+        return r[1];
+      })
+    );
+    return (
+      T(t) +
+      a.map(function (r) {
+        var pct = (r[1] / max) * 100;
+        return (
+          '<div class="br">' +
+          "<span>" + E(r[0]) + "</span>" +
+          '<div><i style="width:' + pct + '%"></i></div>' +
+          "<em>" + r[1] + u + "</em>" +
+          "</div>"
+        );
+      }).join("")
+    );
+  },
+
+  /**
+   * Vertical column chart.
+   * Column height is value / maxValue * 78% of the chart area.
+   */
+  cols: function (t, a, u) {
+    var max = Math.max.apply(
+      null,
+      a.map(function (r) {
+        return r[1];
+      })
+    );
+    return (
+      T(t) +
+      '<div class="cl">' +
+      a.map(function (r) {
+        var pct = (r[1] / max) * 78;
+        return (
+          "<div>" +
+          "<b>" + r[1] + u + "</b>" +
+          '<i style="height:' + pct + '%"></i>' +
+          E(r[0]) +
+          "</div>"
+        );
+      }).join("") +
+      "</div>"
+    );
+  },
+
+  /**
+   * SVG donut chart + colour legend.
+   * Each slice is a circle with stroke-dasharray (SVG trick for pie arcs).
+   * If the title contains "platform", colours come from TG; else from PAL.
+   */
+  donut: function (t, a) {
+    var total = a.reduce(function (sum, r) {
+      return sum + r[1];
+    }, 0);
+    var offset = 0;
+    var usePlatformColours = t.indexOf("platform") > 0;
+    var tgKeys = Object.keys(TG);
+
+    function sliceColour(i) {
+      if (usePlatformColours && TG[tgKeys[i]]) return TG[tgKeys[i]][0];
+      return PAL[i % PAL.length];
+    }
+
+    var html = T(t) + '<div class="dn"><svg viewBox="0 0 42 42">';
+
+    a.forEach(function (r, i) {
+      var pct = (r[1] / total) * 100;
+      // stroke-dasharray: "visibleGap invisibleGap" around a circle of circumference 100
+      html +=
+        '<circle cx="21" cy="21" r="15.9155" stroke="' + sliceColour(i) + '"' +
+        ' stroke-dasharray="' + (pct - 0.6) + " " + (100 - pct + 0.6) + '"' +
+        ' stroke-dashoffset="' + -offset + '"/>';
+      offset += pct;
+    });
+
+    html +=
+      '</svg><div class="lgd">' +
+      a.map(function (r, i) {
+        return (
+          '<div><i style="background:' + sliceColour(i) + '"></i>' +
+          E(r[0]) + "<b>" + r[1] + "</b></div>"
+        );
+      }).join("") +
+      "</div></div>";
+
+    return html;
+  },
+
+  /**
+   * Simple grid map (placeholder). Overridden below by the dual-panel
+   * India / Southeast Asia map once GEO path data is loaded.
+   */
+  map: function (t, a) {
+    var colours = ["#2F6BFF", "#F59E2B", "#12B5CB"];
+    var grid = "";
+    var dots = "";
+    var list = "";
+    var x;
+    var y;
+
+    for (x = 0; x <= 40; x += 5) {
+      grid += '<path d="M' + x * 10 + ',0V460" stroke="rgba(11,16,32,.07)"/>';
+    }
+    for (y = 0; y <= 45; y += 5) {
+      grid += '<path d="M0,' + y * 10 + 'H400" stroke="rgba(11,16,32,.07)"/>';
+    }
+
+    a.forEach(function (p, i) {
+      var coords = C[p[0]];
+      var X = (coords[1] - 68) * 10;
+      var Y = (37 - coords[0]) * 10;
+      var col = colours[p[3]];
+
+      dots +=
+        '<circle cx="' + X + '" cy="' + Y + '" r="9" fill="' + col + '" opacity=".22"/>' +
+        '<circle cx="' + X + '" cy="' + Y + '" r="5.5" fill="' + col + '"/>' +
+        '<text x="' + X + '" y="' + (Y + 2.4) + '" font-size="6.5" text-anchor="middle" fill="#FFFFFF" font-weight="700">' +
+        (i + 1) +
+        "</text>";
+
+      list +=
+        '<li><b style="background:' + col + '">' + (i + 1) + "</b>" +
+        "<span>" + E(p[1]) +
+        "<small>" + E(p[2]) + " \u00b7 " + E(p[0]) + "</small></span></li>";
+    });
+
+    return (
+      T(t) +
+      '<div class="mp">' +
+      '<svg viewBox="0 0 400 460" role="img" aria-label="' + E(t) + '">' +
+      grid +
+      '<text x="12" y="448" font-size="8" fill="#8A93A6">Schematic location map, not to scale</text>' +
+      dots +
+      "</svg><ol>" + list + "</ol></div>"
+    );
+  },
+
+  /** Two (or more) blocks side by side in a 2-column grid */
+  row: function (a) {
+    return (
+      '<div class="g2">' +
+      a.map(function (b) {
+        return "<div>" + blk(b) + "</div>";
+      }).join("") +
+      "</div>"
+    );
+  }
+};
+
+/**
+ * Dispatch one block: b[0] is the type name, the rest are arguments.
+ * Example: ["bars", "Title", [["A",5],["B",3]], ""]
+ *       →  R.bars("Title", [["A",5],["B",3]], "")
+ */
+function blk(b) {
+  return R[b[0]].apply(null, b.slice(1));
+}
+
+/* ============================================================
+ * 5) MAP GEO PATH DATA + FANCY MAP OVERRIDE
+ *    GEO holds SVG path strings for India and Southeast Asia land shapes.
+ *    Designers: you do not need to edit this — it is machine-generated
+ *    outline data. Scroll past it to the R.map override and routing.
+ * ============================================================ */
+
+var GEO={"india":[["ld","M12,-11L13,-10L14,-9L15,-8L15,-7L15,-6L14,-5L13,-4L12,-3L10,-1L9,0L9,3L8,3L7,3L6,3L4,3L2,3L1,2L-2,1L-5,2L-6,0L-6,-1L-5,-3L-4,-5L-7,-6L-8,-7L-9,-8L-10,-8L-11,-8L-11,-11Z"],["ld","M-11,-8L-10,-8L-9,-8L-8,-7L-7,-6L-5,-6L-5,-3L-6,-1L-6,0L-5,2L-7,2L-10,1L-11,0Z"],["h2","M361,340L360,342L360,340L360,338L361,338L361,340ZM368,340L367,339L366,339L365,336L363,335L362,336L361,337L360,337L359,334L359,333L359,330L360,328L361,324L362,322L363,318L365,314L365,312L365,311L365,310L365,309L367,307L368,306L368,271L367,270L365,268L363,266L362,265L361,263L360,262L359,261L359,259L359,257L359,256L360,256L362,255L363,255L363,252L363,250L363,248L363,247L366,245L367,244L367,243L364,244L363,241L363,240L362,239L362,237L362,236L359,234L359,233L357,231L356,230L354,228L353,227L354,225L353,224L353,222L352,221L351,221L349,219L351,219L352,218L353,218L354,217L353,214L354,211L354,210L354,207L356,206L357,204L358,204L359,205L361,205L362,205L365,204L367,204L368,203L368,202ZM363,340L363,338L363,340ZM360,327L360,326L360,327Z"],["ld","M9,4L9,0L10,-1L12,-3L13,-4L14,-5L15,-6L15,-7L16,-8L14,-9L13,-10L12,-11L89,-11L90,-10L89,-9L89,-8L90,-7L91,-5L91,-4L91,-2L91,-1L92,0L93,1L93,2L91,3L90,2L89,2L87,1L86,1L85,1L83,1L82,2L81,2L80,2L78,3L77,3L77,2L77,1L76,1L75,0L73,0L71,1L68,3L66,4L65,5L62,6L59,7L57,8L55,9L54,9L52,8L51,6L51,4L51,3L52,1L52,-1L52,-3L53,-5L52,-5L50,-5L49,-5L49,-6L50,-8L49,-9L47,-11L45,-11L43,-11L42,-10L40,-8L39,-7L38,-6L37,-5L37,-3L37,-2L37,-1L35,-1L34,-1L32,-1L30,-1L29,-1L28,1L28,2L28,3L26,4L25,4L24,3L23,2L21,2L20,3L19,3L18,4L16,4L15,5L14,6L12,6L11,6L10,5L9,4Z"],["ld","M149,321L148,320L149,321ZM148,327L147,327L148,327ZM149,318L150,318L152,318L154,320L158,324L160,327L160,328L161,329L163,332L163,333L165,334L166,337L166,338L169,342L169,343L170,345L171,347L171,351L171,352L170,354L170,355L169,356L168,357L165,359L161,361L158,362L155,363L153,362L151,360L150,358L149,356L148,353L147,344L147,342L146,338L146,337L147,336L147,339L148,336L148,335L149,331L149,330L150,327L151,325L151,324L151,323L150,321L152,322L153,322L154,322L152,321L150,320L149,319Z"],["ld","M112,21L113,22L114,24L114,25L115,26L116,27L115,29L114,29L113,30L112,31L110,32L109,32L105,33L104,33L103,33L100,34L99,34L97,34L95,33L93,33L91,33L90,32L87,32L86,32L84,31L82,32L81,32L80,33L79,34L78,35L78,37L80,37L80,38L79,39L80,40L82,40L83,40L83,42L81,42L81,43L80,44L81,45L82,46L82,47L81,48L80,49L82,51L83,52L84,52L84,53L85,54L86,54L87,55L88,56L88,57L90,58L92,58L93,58L95,59L96,60L95,62L94,62L89,64L88,65L87,65L86,67L87,69L87,72L87,73L88,74L86,75L85,76L83,77L81,80L79,81L79,82L80,84L78,85L77,86L74,87L73,87L73,89L72,91L70,94L68,97L65,99L61,101L60,103L60,104L57,107L56,109L56,110L54,110L52,111L49,111L48,111L45,113L44,113L42,112L42,110L40,109L39,109L38,109L37,110L35,113L33,115L31,117L30,118L29,119L29,121L28,123L30,124L31,125L33,126L35,126L36,126L36,128L36,130L35,131L35,132L36,133L38,136L40,136L41,136L42,136L42,139L43,140L44,141L45,143L45,145L46,147L46,148L46,149L46,150L47,151L45,151L44,152L43,153L41,152L41,151L38,151L36,152L35,153L34,153L32,153L31,153L30,153L28,152L26,152L24,152L23,152L22,152L21,152L20,156L18,156L17,156L16,156L15,156L13,157L13,158L12,157L11,157L10,156L8,157L7,156L6,157L5,155L4,154L4,153L4,152L3,151L2,147L-3,145L-3,142L-3,141L-5,139L-5,138L-7,137L-8,137L-9,137L-10,138L-7,138L-6,139L-8,138L-9,138L-11,139L-11,89L-9,88L-8,87L-9,86L-8,84L-8,83L-8,80L-8,79L-8,77L-7,76L-6,75L-5,75L-3,73L-2,72L-1,71L0,71L1,72L3,72L5,72L7,72L8,71L7,70L7,69L9,68L12,67L13,66L14,65L15,66L17,66L17,66L19,66L21,67L22,67L23,67L24,66L25,65L26,64L26,60L26,58L26,57L28,55L28,54L29,52L31,51L34,50L36,49L37,48L38,48L37,47L36,45L35,43L33,41L33,40L34,40L37,41L39,41L42,41L44,40L47,40L47,38L47,36L46,35L47,33L47,32L49,31L49,30L51,29L52,28L53,27L53,26L52,25L53,24L53,22L52,21L51,19L50,18L49,17L49,16L50,15L51,14L52,13L54,12L55,12L57,11L59,10L60,9L62,8L64,8L65,8L66,8L69,7L70,7L74,7L77,7L79,7L81,8L83,7L85,6L87,5L88,5L90,6L91,6L93,6L94,6L96,7L97,9L99,9L100,9L101,9L102,10L103,11L103,13L103,15L102,16L104,17L105,18L105,19L106,19L108,19L109,19L110,20L112,21Z"],["ld","M243,111L243,112L243,113L242,116L241,119L243,122L243,123L243,124L243,126L242,127L240,127L239,127L237,128L236,128L235,127L233,128L232,128L230,126L227,127L225,127L223,126L221,125L220,125L219,125L217,125L215,125L215,123L214,123L212,123L210,124L209,123L209,123L207,122L206,122L203,120L203,118L203,117L201,117L198,116L197,115L194,116L193,116L190,116L189,115L188,116L187,116L185,116L183,115L181,115L180,113L178,113L176,112L174,111L172,110L171,111L170,110L168,109L167,109L165,107L163,106L161,105L160,104L158,103L157,102L156,102L155,102L153,102L152,101L150,100L150,98L151,97L152,96L152,94L152,93L153,91L154,89L156,87L157,86L159,85L160,84L161,84L162,86L164,85L166,82L168,82L171,82L173,82L174,83L174,84L175,86L178,87L180,88L182,90L184,91L186,91L187,91L188,93L189,94L191,96L192,96L193,95L195,95L196,95L197,95L198,97L198,99L199,99L200,100L203,102L204,103L205,103L208,102L209,102L208,104L208,105L209,106L212,106L215,106L216,107L217,108L218,109L218,110L219,109L219,108L221,108L222,110L223,110L224,110L225,108L226,108L228,109L229,110L230,110L232,111L233,111L235,111L236,111L238,111L240,111L242,111L243,111Z"],["h2","M339,371L341,371L343,371L345,371L346,371L347,371L350,371L351,371L353,373L326,374L324,370L325,369L325,368L327,367L328,367L329,367L330,367L332,368L334,370L335,370L336,371L339,371ZM326,364L325,365L325,364L326,364Z"],["hl","M13,157L15,156L16,156L17,156L18,156L20,156L20,152L21,152L23,152L24,152L26,152L28,152L29,152L31,153L32,153L34,153L35,153L36,152L38,151L40,151L41,151L42,152L43,152L45,151L46,151L46,150L46,149L46,148L46,147L45,145L45,143L44,141L43,140L42,139L42,137L41,136L40,136L38,136L36,133L35,132L35,131L36,130L36,128L36,127L35,126L33,126L31,125L30,124L29,124L29,121L29,119L30,118L31,117L33,115L35,113L36,111L37,110L39,109L40,109L41,109L42,111L43,112L45,113L48,111L49,111L52,111L54,110L56,110L56,109L57,107L59,105L60,103L61,101L65,99L68,97L70,94L72,91L73,89L73,87L74,87L77,86L78,85L80,84L79,82L79,81L81,80L83,77L84,76L86,75L88,74L87,73L87,72L87,69L86,67L87,65L88,65L89,64L93,62L95,62L96,60L95,59L93,58L92,58L90,58L88,58L88,56L88,55L86,54L85,54L84,53L84,52L83,52L82,51L81,50L80,49L82,47L82,46L81,45L80,44L81,43L81,42L83,42L83,40L82,40L80,40L79,39L80,38L80,37L78,37L78,35L79,34L80,33L81,32L82,32L84,31L86,32L87,32L90,32L91,33L93,33L95,33L97,34L99,34L100,34L102,34L104,33L105,33L109,32L110,32L112,31L112,30L114,29L115,29L116,27L117,27L118,26L120,25L122,24L123,24L124,23L125,24L127,23L127,25L127,27L128,29L129,31L130,33L132,34L134,34L135,35L136,36L138,37L137,38L135,39L135,42L136,44L136,46L137,47L138,48L139,49L139,51L139,51L140,52L140,53L141,55L140,57L139,58L139,59L137,59L136,59L135,58L135,56L133,57L131,57L131,58L132,60L132,61L134,63L135,65L134,65L135,67L135,68L135,70L135,71L136,71L137,71L139,70L141,72L142,74L144,75L146,75L147,75L148,76L150,77L152,78L152,79L154,80L156,81L157,81L160,83L161,84L159,85L157,86L156,87L154,89L153,91L152,93L152,94L152,96L151,97L150,98L150,99L151,100L153,102L154,102L155,102L157,102L158,103L160,104L161,105L163,105L164,106L167,109L168,109L170,110L171,111L172,110L173,110L176,112L178,113L180,113L181,114L183,115L185,116L186,116L188,116L189,115L190,116L193,116L194,116L196,115L198,116L201,117L203,117L203,118L203,120L206,122L207,122L208,122L209,123L210,124L212,123L214,123L214,123L215,124L216,125L219,125L220,125L221,125L223,126L225,127L227,127L230,126L231,127L233,128L235,127L236,128L237,128L239,127L240,127L241,128L243,126L243,124L243,123L243,122L241,120L242,116L242,114L243,112L243,111L243,110L245,110L246,109L248,109L249,108L250,109L251,110L251,112L250,115L250,116L252,117L250,118L250,119L251,121L253,122L255,123L257,122L258,123L260,123L261,124L264,124L266,124L267,122L268,122L270,122L271,123L273,123L274,123L278,123L279,123L281,122L282,123L284,123L285,123L286,122L287,122L288,122L288,121L287,120L288,118L288,117L287,116L286,116L285,116L284,115L283,114L283,112L284,112L285,112L286,112L289,111L290,111L291,111L293,111L295,110L295,109L296,108L298,107L299,105L300,105L301,104L301,102L303,102L307,101L308,101L309,100L311,99L312,98L313,97L314,96L316,95L318,94L319,95L322,96L324,97L325,97L326,97L328,96L330,94L332,93L334,93L335,93L336,95L337,95L337,96L336,96L335,98L337,97L339,97L339,98L340,100L338,102L337,103L337,104L338,105L340,104L342,105L345,105L346,105L348,107L349,107L349,109L349,110L348,111L346,112L345,113L344,114L344,116L346,119L344,119L343,117L341,117L337,118L336,118L334,118L333,119L332,120L330,121L327,124L326,125L324,125L323,126L323,128L323,130L323,131L323,132L322,133L322,135L320,137L318,138L317,140L317,141L318,142L319,143L318,145L317,146L316,148L315,149L314,152L313,154L312,156L312,157L311,156L309,156L308,156L306,155L305,156L303,154L303,158L304,159L304,161L303,163L303,165L303,166L301,166L301,168L300,169L300,170L300,171L300,172L301,174L301,176L300,176L299,178L297,178L296,177L295,177L295,178L294,178L294,174L293,172L293,170L292,169L292,168L291,166L291,164L291,163L291,161L290,159L289,158L288,159L287,159L287,160L287,161L285,163L285,164L285,166L284,167L282,167L281,165L280,164L280,166L279,162L278,160L278,159L278,158L279,156L280,155L281,154L282,154L283,153L284,153L286,153L286,152L287,151L288,151L289,150L290,147L290,146L290,145L292,145L293,145L292,144L290,142L288,142L285,142L282,142L281,142L279,142L276,142L273,142L272,142L270,142L267,142L266,141L265,141L263,140L262,139L263,137L262,134L262,133L261,130L260,130L260,131L259,132L258,132L257,132L256,132L255,131L254,130L254,129L253,128L252,128L253,129L252,129L250,129L249,129L249,127L247,126L246,126L246,127L247,127L246,129L244,130L243,131L243,133L243,134L244,135L246,136L247,137L248,138L250,138L251,140L252,140L252,142L250,142L248,142L247,142L246,144L245,145L244,145L242,147L242,148L243,150L244,150L245,150L247,151L249,152L250,152L250,153L250,154L249,157L248,159L249,160L250,161L250,163L251,164L252,164L251,166L251,167L252,169L252,170L253,172L254,175L254,176L254,177L253,179L252,179L253,180L254,182L253,182L251,181L251,182L250,183L249,181L250,178L249,177L248,180L248,182L247,183L245,181L244,183L243,182L243,181L244,178L244,177L243,176L241,175L241,174L241,175L242,176L243,178L241,180L239,181L238,182L232,183L231,184L229,186L228,187L228,189L229,190L229,193L229,194L228,195L227,196L227,198L224,199L224,200L223,201L222,201L222,202L221,202L217,204L214,205L213,205L213,203L212,202L210,204L209,206L211,205L210,207L204,211L203,213L203,214L201,216L198,220L197,221L192,223L191,224L188,227L186,229L184,230L179,233L177,235L176,236L176,237L177,238L176,240L175,241L174,242L170,243L166,243L164,243L163,248L161,249L161,250L159,250L159,249L157,248L154,250L153,251L151,255L150,258L151,261L151,264L152,265L151,266L151,268L151,270L152,272L152,273L152,274L153,276L152,275L151,274L150,275L153,277L152,285L151,288L150,290L148,293L147,297L147,298L147,300L146,301L147,301L148,302L148,307L148,313L147,313L146,313L145,313L142,313L141,314L141,316L138,320L137,321L137,323L138,324L139,324L141,324L142,325L140,325L138,325L131,327L130,328L129,329L128,332L128,333L127,335L124,337L122,338L118,338L116,336L115,335L111,330L109,327L109,326L107,323L107,320L106,317L107,318L108,320L108,322L109,322L107,317L106,316L106,314L105,312L103,307L102,304L100,301L99,299L98,297L97,295L96,294L95,293L91,287L90,284L90,282L89,281L88,276L88,274L88,272L86,270L86,268L85,266L85,265L84,264L83,262L82,260L80,258L79,255L78,254L80,254L79,253L78,252L79,251L77,251L76,249L74,247L74,245L73,242L72,233L71,230L71,229L70,225L69,223L69,221L68,220L68,218L68,216L68,215L69,214L69,213L69,211L68,213L67,212L67,210L67,209L69,210L67,209L66,208L66,206L66,204L66,200L68,195L68,194L68,192L67,190L67,189L65,188L65,185L66,184L65,184L66,183L67,183L69,182L70,181L69,182L67,182L64,182L64,180L66,179L65,179L63,179L64,176L66,176L67,176L66,175L64,175L63,175L61,175L60,175L61,176L61,177L59,178L58,180L59,181L60,182L60,184L58,187L53,190L51,191L46,193L45,193L43,193L40,192L36,189L35,188L32,184L29,182L27,180L25,178L23,176L23,175L23,174L24,173L25,174L26,175L29,174L31,174L32,173L35,172L35,172L37,172L38,169L40,167L40,166L39,166L38,167L37,167L36,167L33,168L31,169L26,168L21,166L19,165L18,163L16,160L19,158L20,157L19,157L17,158L15,160L14,160L14,158L13,157ZM309,353L309,354L307,351L307,349L308,348L310,351L309,353ZM307,347L306,348L306,347L307,346ZM301,336L300,336L301,336ZM304,341L303,341L303,340L304,340ZM305,339L304,337L305,339ZM297,326L296,325L297,326ZM293,310L292,310L292,309L292,308L293,306L294,307L294,308L293,310ZM295,300L294,300L295,299L295,300ZM296,299L294,296L294,295L294,294L295,293L295,292L295,291L296,291L296,290L296,287L296,286L296,284L297,283L297,282L297,279L297,278L298,276L299,276L300,277L299,278L300,279L300,280L298,281L298,282L299,283L299,287L298,288L298,291L297,292L296,293L297,295L296,296L296,297L296,299ZM299,293L300,294L299,294ZM296,283L295,282L296,283ZM66,302ZM70,336Z"],["ld","M368,-11L368,165L366,165L367,163L366,162L366,161L366,160L366,158L364,157L365,156L366,154L363,154L362,154L361,154L359,154L357,155L355,155L354,156L352,157L352,155L353,154L353,153L353,152L352,150L351,150L351,148L352,146L353,146L353,144L354,142L354,141L356,141L357,140L358,139L358,137L360,137L361,136L362,135L363,134L364,134L363,132L363,131L364,131L364,129L365,127L365,126L365,124L365,123L365,122L365,120L364,119L364,116L364,114L362,113L361,113L361,115L359,113L358,110L358,109L358,108L356,106L354,105L353,105L353,103L351,103L350,104L349,106L347,105L345,105L343,105L341,104L338,105L337,105L337,104L338,102L340,100L339,98L339,97L337,97L335,99L335,97L337,96L338,95L336,95L335,93L334,93L332,93L330,94L328,95L327,97L326,97L324,97L322,96L319,96L318,94L316,95L314,96L313,97L312,98L311,98L310,99L308,101L307,101L303,102L302,102L301,104L300,105L299,105L298,107L296,108L295,109L295,110L294,111L292,111L291,111L289,111L287,112L285,112L284,112L283,112L283,110L282,109L280,109L279,108L278,109L276,110L275,109L273,108L272,108L270,108L269,108L269,107L267,106L266,106L264,106L263,106L262,106L261,107L259,108L258,110L256,111L255,113L254,114L252,115L252,117L250,116L250,115L251,112L251,111L251,109L249,108L248,109L246,109L245,110L243,110L242,111L241,111L238,111L236,111L235,111L233,111L232,111L230,110L229,110L228,109L227,109L226,108L224,110L223,110L222,110L221,109L220,108L219,109L218,110L218,109L217,108L216,107L215,106L212,106L209,106L208,106L208,104L209,103L208,102L205,103L204,103L203,102L201,101L199,99L198,99L198,97L197,96L196,95L195,95L193,95L192,96L191,96L189,94L188,93L187,91L186,91L184,91L182,90L180,88L178,87L175,86L174,84L174,83L173,82L171,82L168,82L166,82L164,85L163,86L162,85L161,84L160,83L158,82L157,81L154,80L153,80L152,78L151,77L149,76L147,75L146,75L145,75L142,74L141,72L139,70L138,70L138,71L136,71L135,71L135,70L135,68L135,67L134,65L135,65L135,63L132,61L132,60L132,59L131,57L133,57L134,57L135,57L135,58L137,59L138,59L139,58L141,57L141,55L140,54L140,52L139,51L139,51L139,49L138,48L137,47L136,46L136,44L136,42L135,40L137,38L138,37L136,36L135,35L134,34L132,34L130,33L129,31L128,29L127,27L127,26L127,24L126,23L125,23L123,23L122,23L120,23L118,23L116,22L114,22L112,21L111,20L110,19L108,19L106,19L105,19L105,18L104,17L102,17L103,16L103,13L103,11L102,10L101,9L100,9L99,9L97,9L96,7L94,6L93,6L91,6L90,6L88,5L87,5L86,5L85,4L87,3L88,3L89,3L91,3L92,2L93,1L92,0L91,-1L91,-2L91,-3L91,-5L90,-6L89,-8L89,-9L90,-10L89,-11Z"],["ld","M368,202L368,203L367,204L365,204L362,205L361,205L360,205L358,204L357,204L356,205L354,207L354,210L354,211L353,213L354,217L353,218L352,218L351,219L350,218L350,220L352,221L353,222L353,224L354,225L353,226L354,228L356,230L357,231L359,233L359,234L362,236L362,237L362,239L363,240L363,241L364,243L366,242L367,244L366,245L363,247L363,248L363,250L363,252L363,254L362,255L360,256L359,256L359,257L359,259L359,261L360,262L361,263L362,265L363,266L365,268L367,270L368,271L368,306L367,307L366,308L365,309L365,311L365,312L365,313L364,314L363,316L362,314L363,312L362,308L363,306L364,305L364,303L365,302L365,301L365,300L365,299L366,297L367,296L364,296L364,296L364,294L364,293L364,292L365,291L363,290L364,289L364,288L364,287L364,286L364,284L363,282L363,280L362,278L361,276L359,273L359,272L359,271L358,274L358,271L357,270L358,268L356,266L356,265L355,263L357,263L356,261L354,260L354,257L354,255L354,254L353,249L352,247L352,246L352,244L352,242L353,241L352,241L351,241L349,241L349,240L347,237L347,235L346,234L345,232L343,231L344,232L343,233L344,235L343,237L343,238L341,241L339,241L338,241L337,240L336,238L336,240L337,242L335,243L334,243L334,244L331,245L330,246L330,248L328,249L326,250L325,250L326,249L326,247L326,246L325,249L323,249L321,249L321,247L321,246L321,245L320,246L320,248L318,248L318,247L318,246L318,244L319,243L319,241L318,242L318,243L316,245L316,246L314,247L313,246L314,241L315,240L315,237L316,236L316,234L317,232L317,229L317,228L316,226L315,222L314,218L313,217L312,216L312,214L311,211L311,209L311,211L310,213L310,214L308,213L307,212L306,211L305,209L306,208L307,210L308,210L310,209L310,208L309,207L308,206L308,205L306,204L307,202L306,202L304,201L303,201L302,200L301,201L301,202L299,200L300,199L299,199L300,197L299,198L298,200L297,199L298,198L297,196L296,195L296,196L296,198L295,196L292,193L291,191L291,190L290,188L290,187L290,186L291,185L292,185L293,186L294,187L295,186L294,184L294,183L294,179L295,178L295,177L296,177L297,178L299,178L299,177L300,176L301,175L300,172L300,171L300,170L300,169L301,168L301,167L302,167L303,166L303,163L304,161L304,159L303,158L303,155L304,155L305,155L307,155L309,156L311,156L312,157L312,156L313,154L314,152L315,150L316,148L317,146L318,145L319,143L318,142L317,142L317,140L318,139L320,138L321,136L322,133L323,132L323,131L323,130L323,128L323,127L323,125L326,125L327,124L330,121L332,121L333,119L334,118L336,118L337,118L341,117L343,117L344,119L345,120L344,116L344,114L345,113L346,112L347,111L349,110L349,109L349,107L349,106L350,105L351,104L352,103L353,104L354,105L355,105L357,107L358,109L358,110L359,113L360,114L361,114L362,113L363,114L364,116L364,118L365,120L365,122L365,123L365,124L365,126L365,127L364,129L364,130L363,131L363,132L364,133L364,134L362,135L361,136L360,137L358,137L358,139L357,140L356,141L354,141L354,142L353,143L354,145L352,146L351,148L351,150L352,150L353,152L353,153L353,154L352,155L352,157L354,156L355,155L357,155L359,154L361,154L362,154L363,154L365,154L365,156L364,157L366,158L366,160L366,161L366,162L367,163L366,165L368,165ZM359,305L360,307L358,306L358,305ZM359,317L359,316L359,317ZM359,299L359,298L360,296L360,298L359,299ZM362,294L362,293L364,294L362,294ZM363,296L363,299L361,298L361,297L361,296L363,295ZM361,286L362,288L361,289L360,287L360,286L361,286ZM358,292L357,291L358,290L358,291ZM316,248L315,249L315,247L316,246L317,245L317,247L316,248ZM352,244L351,244L350,242L352,242L352,243L352,244ZM307,216L306,216L305,214L306,214L308,214L307,216ZM305,202L305,204L304,203ZM307,206L309,207L310,208L309,209L308,209L307,208L306,207ZM363,305L363,304L363,305ZM357,297L357,295L357,296ZM357,289L357,290L356,289ZM360,281L360,283L359,282L359,281L359,280L360,281ZM320,249L320,248L320,249ZM299,202L299,203L298,201L298,200L299,202Z"],["ld","M283,112L283,113L283,114L285,116L286,116L287,115L288,117L288,118L287,120L288,121L288,122L287,122L286,122L285,123L284,123L282,123L281,122L279,123L278,123L274,123L273,123L272,123L270,122L268,122L267,122L266,124L264,124L262,124L260,124L258,123L257,123L255,123L253,122L252,122L251,120L250,119L252,117L252,115L253,115L255,113L256,111L258,110L259,109L261,107L262,107L263,106L264,106L266,106L267,106L269,106L268,108L270,108L272,108L273,108L275,109L276,110L278,109L279,108L280,109L282,109L283,110L283,112Z"],["ld","M254,177L254,176L254,175L253,172L252,171L252,169L251,167L251,166L252,165L251,164L250,164L250,162L249,160L248,159L249,157L250,155L250,153L250,152L249,152L247,151L246,151L245,150L243,150L242,148L242,147L243,145L245,145L246,144L247,142L248,142L249,142L251,142L252,141L251,140L251,139L248,138L247,138L246,136L244,135L243,134L243,133L243,131L244,130L245,129L247,128L246,127L246,126L247,126L249,127L249,129L250,129L252,129L253,129L252,128L253,128L254,129L254,130L255,131L256,132L257,132L258,132L259,132L260,131L260,130L261,130L262,133L262,134L263,137L262,139L263,140L265,141L266,141L267,142L270,142L271,142L273,142L276,142L279,142L281,142L282,142L285,142L288,142L290,142L292,144L293,144L293,145L290,145L290,146L290,147L289,150L289,151L288,151L286,152L286,153L284,153L283,153L282,154L281,154L280,155L279,156L278,158L278,159L278,160L279,162L280,166L280,164L281,165L282,166L283,167L285,166L285,164L285,163L287,161L287,160L287,159L288,159L289,158L290,159L291,161L291,163L291,164L291,166L292,168L292,169L293,170L293,172L294,174L294,178L294,179L294,183L294,184L295,186L294,187L293,186L292,185L291,185L290,186L290,187L290,188L291,190L291,191L290,190L288,188L288,184L288,182L287,180L286,176L286,175L284,174L284,172L282,170L282,169L282,168L281,169L280,170L278,171L275,171L274,170L272,166L272,164L272,162L272,161L271,162L269,162L268,162L269,163L270,163L271,164L271,165L270,166L271,168L270,168L269,170L270,171L271,172L271,173L271,175L270,176L269,178L268,179L266,180L265,180L266,178L267,176L265,177L264,178L264,177L263,176L263,175L264,173L263,174L263,175L263,176L263,177L262,178L261,180L260,181L260,180L259,178L259,175L259,178L259,179L258,180L257,181L256,181L254,180L254,178ZM278,176L276,177L277,172L278,174L278,175L278,176ZM282,174L281,174L281,173L281,171L282,173L282,174ZM273,177L271,178L270,177L272,174L272,173L272,172L271,171L270,170L270,169L271,168L272,169L273,171L274,173L274,174L274,176ZM286,180L286,181L286,180ZM287,184L286,184L286,182L287,182L287,184ZM272,167L271,167L272,167Z"],["ld","M-5,2L-2,1L1,2L2,3L4,3L5,3L6,3L8,3L9,4L11,6L12,6L14,6L15,5L16,4L18,4L19,3L20,3L21,3L22,2L24,3L25,4L26,5L27,4L28,2L28,1L28,0L30,-1L32,-1L34,-1L35,-1L37,-1L37,-2L37,-3L37,-4L38,-6L39,-7L40,-8L42,-10L43,-11L45,-11L47,-11L49,-9L50,-8L49,-6L49,-5L50,-5L52,-5L53,-5L52,-3L52,-1L52,1L51,3L51,4L51,6L52,8L53,9L54,9L57,8L59,7L62,6L65,5L66,4L68,3L71,1L73,0L75,0L76,1L77,1L77,2L76,3L78,3L80,2L81,2L82,2L83,1L85,1L86,1L87,1L88,1L90,2L89,2L87,3L85,4L86,5L83,7L81,8L79,7L78,7L74,7L70,7L69,7L66,8L65,8L64,8L62,8L61,9L59,9L57,11L55,12L54,12L53,12L51,14L50,15L49,16L48,17L50,18L51,19L52,21L52,22L53,23L53,24L52,25L53,27L52,28L51,29L50,30L49,31L47,32L47,33L46,34L46,35L47,37L47,39L44,40L42,41L39,41L38,41L34,40L33,40L33,41L35,43L36,45L37,47L38,48L37,48L36,49L34,50L31,51L30,51L28,54L28,55L27,56L26,58L26,60L26,64L25,65L24,66L23,67L22,67L21,67L19,66L17,66L17,66L15,66L14,65L13,66L12,67L9,68L7,69L7,70L8,70L7,72L5,72L3,72L1,72L0,71L-1,71L-2,72L-3,73L-4,74L-6,75L-7,76L-8,77L-8,79L-8,80L-8,83L-8,84L-9,85L-8,87L-9,88L-11,89L-11,0L-10,1L-7,2L-6,2Z"],["ld","M116,27L115,26L114,25L114,24L113,22L112,21L114,22L116,22L118,23L120,23L122,23L123,23L122,24L120,25L118,26L117,27L116,27Z"]],"sea":[["ld","M93,122L93,124L92,125L92,126L91,124L90,123L92,122L93,122ZM138,-6L136,-6L135,-5L133,-4L131,-3L131,-2L131,-1L128,1L127,0L126,0L125,1L124,0L123,0L123,2L121,5L122,7L121,8L120,9L117,12L116,12L115,12L113,16L113,18L113,19L113,20L112,22L111,22L111,23L112,26L113,27L114,29L116,31L117,32L118,32L120,34L121,35L121,38L119,37L121,38L123,42L126,43L128,45L129,47L131,48L133,50L135,52L136,53L136,54L137,54L138,54L139,55L140,56L141,56L141,58L143,59L143,60L145,62L146,63L147,65L148,67L149,69L150,71L150,72L150,74L151,76L152,77L152,79L152,80L153,82L153,83L152,82L152,85L153,87L153,89L154,92L154,95L155,97L153,95L152,96L153,99L152,99L152,103L152,104L152,105L152,103L151,105L152,106L151,107L150,108L150,110L149,111L147,111L146,113L144,113L143,115L141,116L140,116L139,116L138,118L136,118L133,120L132,121L131,121L130,122L128,121L127,119L126,121L124,122L123,120L122,121L123,121L124,122L124,123L122,123L121,123L122,124L123,124L123,126L123,127L122,128L120,127L117,124L117,125L121,129L121,130L121,131L119,132L117,130L114,127L113,126L116,130L117,131L117,132L117,133L109,137L108,138L107,140L106,141L105,142L102,143L101,143L102,141L101,140L101,136L102,131L102,129L103,128L105,128L104,127L103,125L102,125L101,124L100,125L99,123L98,123L97,122L98,121L100,120L101,121L102,120L103,119L104,118L104,116L105,116L107,117L108,116L110,115L112,115L113,116L114,116L116,117L117,116L117,115L114,112L113,111L113,109L113,108L114,107L115,106L116,106L118,107L119,107L120,105L121,104L122,104L124,103L126,103L127,101L128,100L130,100L131,101L132,99L133,97L133,95L132,94L132,93L132,92L133,89L133,87L133,86L133,84L132,83L131,81L130,79L131,77L132,75L132,74L133,73L132,71L132,70L132,69L133,68L134,66L133,64L132,64L130,63L129,61L128,60L131,58L131,57L130,57L129,56L127,54L126,53L125,52L124,52L123,52L122,51L121,48L121,47L119,44L115,41L114,40L112,39L111,38L111,36L110,35L109,34L108,32L107,32L105,31L104,29L105,28L105,27L103,26L100,25L99,25L98,24L93,21L92,20L91,20L91,19L92,18L93,17L92,16L93,15L95,15L98,16L101,14L101,13L102,12L103,11L102,10L100,9L100,8L99,7L98,7L97,7L98,5L99,5L98,4L96,2L94,1L93,1L91,2L90,2L89,3L88,3L87,3L86,3L83,2L82,1L79,-2L79,-4L79,-5L80,-7L80,-8L79,-8L78,-8L77,-8L76,-9L76,-10L75,-11L123,-11L124,-11L125,-11L126,-11L127,-10L129,-8L130,-8L131,-7L131,-7L134,-7L135,-8L137,-6ZM122,142L123,141L122,142ZM128,122L127,123L128,122ZM125,2L124,2L125,2ZM133,-2L132,-1L132,-3L133,-3ZM132,1L131,1L132,1L133,0L132,1ZM127,3L125,2L127,2L127,3Z"],["h2","M76,107L76,108L75,107ZM74,104L72,104L72,102L73,103L74,104ZM28,151L27,152L26,150L26,148L28,149L28,150ZM47,8L49,8L50,7L51,9L52,9L52,10L52,12L51,13L51,14L51,16L52,17L53,17L55,17L56,16L57,16L59,16L60,17L60,19L60,21L61,22L61,23L60,25L59,27L59,28L58,29L59,30L59,32L59,33L59,34L58,37L56,39L58,40L59,40L61,39L62,38L64,37L65,36L66,34L68,34L69,33L71,32L72,33L73,34L74,35L75,35L76,36L77,37L78,35L79,35L80,35L82,33L82,32L84,31L83,30L85,30L86,30L88,30L90,31L91,31L93,32L94,35L96,37L97,38L98,39L100,40L101,41L101,43L101,45L101,47L101,50L101,52L103,54L104,55L105,56L107,57L108,58L108,59L110,60L111,61L111,63L109,65L109,66L109,68L110,69L110,70L110,71L109,73L109,74L107,76L106,76L105,77L104,78L103,76L102,76L101,76L99,76L97,76L95,76L93,76L91,76L90,76L89,76L87,76L85,76L84,76L83,77L81,78L79,79L79,80L78,81L77,82L76,84L76,85L74,85L73,86L73,89L73,90L74,91L75,94L75,96L76,97L78,99L77,101L77,102L80,107L78,105L78,103L77,102L76,102L74,101L73,101L72,99L71,98L69,97L68,97L67,96L66,96L63,96L59,96L57,96L56,95L56,94L56,92L57,90L57,89L57,87L54,86L52,86L49,86L47,87L46,88L46,89L47,91L46,95L46,96L46,99L46,102L45,103L44,104L44,106L43,107L42,110L41,113L40,114L40,116L38,120L37,122L37,123L37,124L36,127L36,130L37,131L38,133L37,135L38,135L43,134L44,135L45,136L45,137L46,142L46,143L47,145L48,144L49,145L49,146L51,156L52,157L52,158L51,158L51,156L50,155L50,154L49,152L48,153L48,154L48,155L50,158L51,159L53,159L54,160L55,161L58,163L59,162L61,162L62,162L63,163L65,164L67,167L70,170L70,171L68,173L68,175L67,175L65,175L64,174L62,174L60,175L60,176L59,177L58,176L57,174L58,173L58,171L57,170L56,170L55,169L55,168L53,167L50,166L49,165L48,165L48,167L45,164L43,162L43,160L41,159L41,157L40,157L38,155L37,153L35,153L35,151L33,149L32,149L31,147L30,146L29,146L28,147L27,147L26,145L26,143L26,141L27,138L27,135L28,132L29,128L31,124L32,122L32,122L32,120L32,119L33,117L35,116L37,114L39,111L40,109L41,107L42,106L40,102L40,101L39,100L39,99L39,97L38,96L37,95L36,93L36,92L36,91L37,89L36,86L36,85L36,84L35,83L35,81L34,80L31,78L30,76L29,75L28,74L27,72L26,71L25,69L25,67L26,66L27,66L28,65L29,65L29,63L29,60L30,58L30,57L32,55L33,54L33,53L31,54L30,52L29,50L28,49L28,47L28,46L26,44L25,43L24,42L22,40L21,38L20,37L20,35L20,34L19,33L19,32L18,31L16,29L17,29L18,28L19,28L20,27L20,24L21,22L21,20L21,18L22,16L23,14L24,14L26,15L27,15L28,15L32,14L33,14L34,14L35,11L36,10L38,11L39,10L40,10L40,9L40,7L41,8L42,8L43,8L44,7L45,7L47,8ZM47,130L46,129L47,130ZM47,131L47,133L46,133L45,132L46,131ZM42,167L42,164L43,166ZM30,150L29,148L30,150ZM27,137L26,136L27,137ZM35,154L36,156L35,154Z"],["hl","M92,226L90,227L88,226L89,225L90,225L91,225L92,226Z"],["hl","M47,167L48,165L49,165L50,166L52,167L54,167L55,169L56,170L57,170L58,171L59,172L57,174L58,176L59,177L60,176L60,175L62,174L64,174L65,175L67,175L68,175L68,174L70,171L70,170L72,170L75,174L78,177L79,178L80,178L82,179L83,181L85,186L86,188L86,191L85,196L85,198L85,199L86,201L85,203L86,204L86,208L86,209L90,212L92,215L95,222L95,224L95,226L93,225L93,224L92,223L92,225L90,225L88,225L87,226L85,225L85,224L79,221L77,220L75,218L71,216L68,213L66,212L63,211L62,209L61,208L62,207L61,205L61,204L59,202L58,200L56,198L55,197L54,196L55,195L54,193L53,191L53,188L51,183L50,177L50,175L50,173L49,170L48,169L47,167ZM196,225L195,224L189,224L188,224L187,224L186,226L185,227L185,228L183,229L182,230L180,230L179,230L178,230L176,229L174,229L172,230L168,231L167,232L166,231L165,230L162,228L161,227L160,225L158,224L157,223L157,221L156,220L157,218L157,220L159,221L161,222L162,222L164,222L165,222L169,224L170,224L171,224L174,225L175,225L174,225L173,224L174,222L174,220L175,219L175,218L175,216L175,215L175,214L176,214L177,214L178,213L178,211L178,210L180,209L181,209L185,208L192,206L195,205L196,205ZM95,210L93,210L94,209L95,210ZM49,181L48,181L48,179L50,179L49,181ZM44,167L45,168L44,169L43,169L42,168L43,168L44,167ZM61,207L61,206L61,207ZM177,214L176,213L176,210L177,210L177,212L177,213Z"],["ld","M74,-11L76,-10L76,-9L77,-8L78,-8L78,-9L79,-8L80,-7L79,-6L79,-4L79,-2L82,1L83,2L86,3L87,3L88,3L89,3L90,2L91,2L93,1L94,1L96,2L97,3L99,4L98,5L97,6L98,7L99,7L100,8L100,9L101,9L103,11L102,12L101,13L101,14L99,16L95,15L93,15L92,15L93,17L93,17L91,19L91,20L92,20L93,21L97,23L99,25L100,25L103,26L105,27L105,28L104,29L105,31L107,32L108,32L109,34L110,35L111,36L111,38L112,39L114,40L115,41L118,44L120,46L121,47L121,50L122,51L124,52L125,51L125,53L127,54L129,56L130,57L131,57L131,58L129,59L129,60L130,62L132,64L133,64L134,65L134,67L133,68L132,70L132,71L132,72L131,74L130,74L129,75L128,76L127,76L126,77L124,77L124,76L122,75L121,74L119,75L118,75L117,76L115,76L115,77L116,79L116,81L114,81L112,80L110,79L108,79L107,79L106,78L106,77L107,76L108,75L109,74L110,71L110,70L110,69L109,68L109,66L109,65L111,63L111,62L111,61L109,60L108,59L108,58L105,56L104,56L103,54L101,52L101,50L101,47L101,45L101,43L101,41L100,40L98,39L97,38L96,37L94,35L93,32L91,31L90,31L88,30L86,30L85,30L84,30L84,31L83,32L82,33L81,34L79,35L78,35L77,36L76,36L76,35L74,35L73,34L72,33L71,32L69,33L68,34L67,34L66,35L64,37L62,38L61,39L59,40L58,40L57,40L58,37L59,34L59,33L59,32L59,30L58,29L59,28L59,27L60,25L61,23L61,22L60,21L60,19L60,17L59,16L57,16L56,16L55,17L53,17L52,17L51,16L51,14L51,13L52,12L52,10L52,9L51,9L50,8L49,7L48,8L47,7L48,5L49,3L50,2L51,2L52,2L53,2L52,1L52,0L54,-1L54,-3L55,-4L57,-4L58,-5L59,-7L59,-5L60,-3L60,-2L63,-3L64,-3L65,-2L66,-2L67,-2L66,-4L66,-5L66,-6L66,-9L66,-10L64,-11Z"],["h2","M17,225L20,228L21,228L22,230L22,231L22,234L19,235L18,232L17,231L16,229L15,228L12,225L14,225L15,224L17,225ZM36,262L35,262L33,261L32,259L30,256L31,253L33,252L34,254L35,256L36,257L36,258L37,259L38,261L36,262ZM116,261L116,262L117,267L119,270L124,271L123,272L122,275L123,276L121,277L120,276L119,275L118,275L116,274L115,274L114,273L114,272L114,270L113,269L113,268L113,267L112,266L110,266L107,266L106,265L105,265L106,264L107,263L108,262L108,261L109,260L110,259L111,260L112,261L112,259L113,259L114,259L115,260ZM142,199L140,199L139,199L140,198L139,197L138,196L140,193L143,196L143,197L142,199ZM140,276L140,277L139,278L138,279L137,277L136,277L134,278L134,277L133,276L133,274L134,273L134,271L136,271L139,271L140,273L141,274L140,276ZM6,181L7,181L10,181L11,181L12,181L14,182L17,181L18,182L20,184L22,185L23,187L23,188L26,191L26,192L26,193L27,194L29,196L31,196L31,197L33,199L36,200L40,203L43,205L45,207L46,208L46,209L47,211L50,213L51,215L52,216L53,217L54,217L55,219L55,217L56,216L57,215L58,216L60,217L61,218L62,220L62,221L64,222L65,222L67,223L69,225L70,226L71,227L71,228L72,230L73,232L74,233L76,233L79,233L80,234L81,235L81,236L78,238L75,239L78,239L79,238L81,238L82,237L84,236L85,236L87,237L88,238L89,239L90,241L89,242L87,242L85,244L86,245L85,246L86,246L85,248L87,250L89,252L91,253L93,253L94,254L96,253L97,256L97,257L98,260L98,261L98,262L99,264L100,264L101,265L102,266L101,268L100,269L99,271L100,271L102,269L103,269L107,269L108,269L109,269L110,270L114,275L116,277L116,279L114,281L113,283L113,284L114,286L113,289L114,294L114,295L114,297L114,299L113,307L112,308L111,308L110,307L108,305L105,307L104,307L103,307L99,305L99,306L100,308L99,309L98,308L96,307L95,305L94,304L93,303L90,300L85,297L83,295L82,294L80,293L75,289L73,287L71,284L67,280L65,279L62,275L62,274L61,273L60,272L59,271L57,268L56,267L56,266L56,264L52,256L51,254L50,251L47,248L45,246L44,245L43,242L41,240L38,239L37,238L36,237L36,236L35,234L34,230L32,224L31,222L30,220L24,216L23,216L22,215L21,215L20,214L19,213L19,211L19,209L16,207L15,206L14,205L14,204L11,200L9,199L6,198L5,198L4,196L3,195L0,192L-5,188L-6,187L-7,186L-7,184L-9,181L-9,179L-9,178L-7,177L-6,177L-4,177L-3,177L-2,178L0,180L2,181L3,181L6,181ZM131,311L132,312L133,313L134,313L135,313L137,313L138,314L140,314L141,314L143,315L144,316L145,319L147,320L148,320L150,320L153,320L154,320L155,320L156,320L159,321L160,321L162,321L163,321L165,321L166,321L167,321L168,320L168,318L169,317L169,316L171,315L172,316L174,318L176,319L178,318L180,319L181,319L184,320L185,321L188,321L189,321L190,321L191,323L191,324L193,325L193,327L193,328L196,329L196,337L194,338L193,338L192,338L191,338L188,338L185,337L178,337L176,337L173,336L171,336L168,335L161,332L159,332L153,330L152,330L149,330L148,330L147,330L145,330L143,331L142,331L141,331L137,330L136,330L135,329L133,329L130,327L127,327L122,327L121,327L120,326L120,325L121,323L117,321L114,320L113,320L112,320L110,320L109,320L108,320L106,320L107,319L108,318L108,319L109,319L110,318L111,316L112,316L113,312L114,311L115,310L117,310L119,310L120,311L122,311L123,311L124,312L126,311L127,311L127,309L128,310L130,310ZM157,218L156,220L156,221L157,223L158,224L159,225L160,226L161,227L165,230L166,231L167,232L168,231L172,230L174,229L176,229L178,230L179,230L180,230L182,230L183,229L185,228L185,227L186,226L186,225L188,224L189,224L195,223L195,225L196,277L195,278L193,280L191,281L189,280L187,280L185,280L183,282L182,282L182,281L182,280L182,277L181,275L180,275L178,276L177,275L176,275L173,277L172,277L171,276L171,275L170,275L169,276L168,275L165,275L164,276L164,272L162,267L162,265L161,263L161,262L161,260L161,259L161,258L161,256L160,255L160,254L159,253L157,252L155,251L153,252L153,250L154,249L152,248L151,247L151,246L151,245L151,244L152,242L152,241L151,240L150,239L149,237L149,235L148,232L149,231L149,228L151,227L150,227L150,225L151,223L153,222L153,221L154,219L157,218ZM66,218L66,219L66,220L66,221L64,222L63,222L62,220L62,218L64,218L65,217ZM74,230L73,230L72,228L72,227L72,226L73,226L74,227L74,228L74,229ZM75,225L75,226L73,225L72,225L71,225L70,224L69,223L74,224ZM81,233L78,233L75,232L74,231L75,230L75,229L76,229L77,230L80,231L81,233ZM82,231L81,232L80,231L78,230L77,229L77,228L80,229L82,231ZM84,235L82,235L82,234L83,233L84,234ZM86,234L84,233L85,231L86,233L86,234ZM92,228L94,228L93,230L92,230L91,228ZM99,228L99,229L99,230L99,232L98,232L98,231L97,229L95,230L95,229L96,228L98,228L99,228ZM101,244L102,244L104,245L103,245L100,244L98,244L97,244L98,243L98,241L99,242L100,243ZM97,245L99,246L98,247L98,249L96,249L96,248L95,246L97,245ZM89,246L87,246L86,246L87,244L89,245ZM158,255L155,256L154,256L155,254L157,253L158,253L158,254ZM196,324L193,324L193,322L194,321L196,321ZM73,304L72,305L71,303L73,303L73,304ZM51,278L51,280L50,279L50,277L48,276L48,274L51,276L51,277ZM48,273L48,274L46,274L46,272L46,271L48,272ZM44,268L42,268L41,267L41,266L41,265L42,265L43,267L44,268ZM28,248L27,248L27,246L28,244L27,242L28,242L29,243L29,244L29,246L28,248ZM5,214L4,214L0,212L-1,212L-2,211L-3,210L-3,209L-1,208L0,210L1,210L2,211L5,213L5,214ZM85,229L84,229L85,229ZM90,232L89,232L90,232ZM95,232L93,231L95,231ZM100,241L99,240L98,239L100,240ZM118,205L117,205L118,205ZM112,209L112,207L111,206L113,207L113,208ZM148,208L147,208L148,207L148,208ZM149,260L148,261L147,260L149,259ZM132,275ZM125,276L124,276L124,275L125,275ZM192,308L191,309L191,307L192,308ZM106,318L105,318L106,317L107,317ZM15,218L14,217L13,216L14,216L15,218ZM-7,175L-8,175L-9,174L-7,174Z"],["ld","M165,-1L167,-1L167,0L166,0L165,0L165,-1ZM193,-7L192,-8L194,-9L193,-7ZM191,-7L190,-7L191,-8ZM138,-6L136,-7L134,-7L132,-7L131,-7L130,-8L129,-8L127,-9L127,-10L126,-11L124,-11L123,-11L64,-11L66,-10L66,-9L66,-7L66,-5L66,-4L67,-3L66,-2L65,-2L64,-3L63,-3L61,-2L60,-3L60,-4L60,-6L59,-8L58,-8L56,-8L54,-6L52,-5L51,-6L50,-6L48,-5L47,-6L47,-7L46,-8L45,-9L45,-10L45,-11L195,-11L195,-10L193,-11L192,-10L191,-9L190,-9L189,-11L188,-11L189,-9L188,-9L186,-9L184,-10L183,-10L183,-8L181,-8L180,-7L179,-6L177,-6L175,-6L174,-6L173,-6L172,-5L171,-5L170,-4L169,-3L168,-2L166,-3L166,-4L166,-3L165,-2L163,0L163,1L163,2L165,2L165,3L165,4L167,6L167,7L165,8L162,8L160,8L160,7L161,7L159,6L159,4L159,3L158,2L158,-1L158,-3L158,-4L160,-4L160,-6L159,-6L158,-6L156,-8L156,-6L155,-6L153,-5L152,-5L150,-5L151,-6L150,-7L149,-7L147,-7L146,-8L145,-9L145,-10L143,-10L144,-8L144,-7L142,-8L141,-7L140,-7L139,-6L138,-6ZM171,12L172,13L172,14L173,15L171,16L170,17L168,20L168,21L168,22L167,23L166,25L166,26L164,27L163,28L162,29L161,30L159,30L158,32L156,32L154,31L152,31L150,30L149,30L146,28L146,26L145,25L145,20L147,18L148,17L150,16L152,15L153,14L152,14L153,13L154,13L155,13L157,12L160,12L162,12L163,11L165,11L168,12L168,11L169,10L170,11L171,12Z"],["ld","M81,112L81,111L81,112ZM84,118L83,118L84,118ZM132,72L132,74L132,75L131,76L130,79L131,80L132,83L133,84L133,86L133,87L133,89L132,92L132,93L132,94L133,95L133,97L133,99L132,100L130,100L129,100L127,101L126,103L124,103L122,104L121,104L120,104L120,107L118,107L116,106L115,106L114,107L113,108L113,109L113,111L114,112L116,114L117,116L117,117L115,117L114,117L112,115L110,115L109,116L107,117L105,116L104,116L104,117L104,118L102,120L101,121L100,120L98,121L97,122L95,120L91,120L90,120L88,121L87,120L87,118L88,118L89,116L88,114L87,113L85,115L84,116L82,116L82,114L82,113L82,111L82,110L81,108L81,107L80,107L77,102L77,101L77,99L77,98L75,96L75,94L74,92L73,90L73,89L73,86L74,85L75,85L76,84L77,82L78,81L79,80L79,79L81,78L83,77L84,76L85,76L87,76L89,76L90,76L91,76L92,76L95,76L97,76L99,76L101,76L102,76L103,76L104,78L105,77L106,78L107,79L108,79L110,79L112,80L113,81L116,81L116,80L115,77L115,77L117,76L118,75L119,75L120,75L121,74L123,75L124,77L125,77L126,76L128,76L129,75L130,74L131,74L132,73Z"],["ld","M47,8L46,7L45,7L43,8L42,8L41,8L40,7L40,9L40,10L39,10L38,11L37,10L35,10L34,13L34,14L32,14L29,15L27,15L26,15L24,14L23,14L23,15L21,18L21,20L21,22L20,23L20,27L19,28L18,28L17,29L16,29L17,30L18,31L19,33L20,34L20,35L20,36L21,38L22,40L24,42L25,43L26,44L28,46L28,47L28,49L29,50L30,52L31,54L33,53L33,54L32,55L30,57L30,58L29,60L29,63L29,64L28,65L27,66L26,66L25,67L25,69L26,71L27,72L28,74L29,75L30,76L31,78L34,80L35,81L35,83L36,84L36,85L36,86L37,89L36,91L36,92L36,93L37,95L38,96L39,97L39,99L39,100L40,101L40,102L42,106L41,107L40,108L39,111L37,114L35,116L33,117L32,118L32,119L32,122L32,122L31,123L31,124L29,126L29,124L29,122L28,119L30,117L31,115L31,113L32,112L31,111L31,110L32,109L32,107L33,107L31,107L30,106L30,105L31,103L31,102L31,101L30,101L31,99L30,98L31,97L31,96L30,95L30,92L30,90L29,89L28,86L26,84L26,82L26,81L25,85L24,82L24,81L24,79L23,77L23,75L22,73L23,73L22,72L21,71L21,67L20,65L20,64L20,59L18,57L19,56L19,55L19,52L20,51L19,51L17,51L16,51L15,50L14,47L14,45L13,44L11,42L10,41L10,42L10,44L10,46L10,47L9,49L7,51L6,52L4,52L3,51L3,49L3,50L4,52L2,54L1,54L0,55L-3,56L-3,57L-4,58L-5,59L-7,61L-8,60L-8,59L-7,58L-8,56L-9,59L-11,59L-11,59L-11,-11L45,-11L45,-10L45,-9L46,-8L47,-8L47,-6L48,-5L50,-6L51,-6L52,-5L54,-6L56,-8L58,-8L59,-9L59,-7L58,-5L57,-4L55,-4L54,-3L54,-1L52,0L52,1L53,1L52,2L51,2L50,2L49,3L48,5L47,7ZM25,116L26,118L25,116L25,115ZM25,127L26,126L26,127ZM26,109L25,108L26,106L26,108L26,109ZM29,105L28,103L30,104L29,105ZM29,106L29,109L28,108L28,107L27,106L29,106ZM28,97L28,98L27,99L27,98L26,96L28,96ZM25,102L23,101L24,100L24,101ZM18,55L17,54L17,52L18,52L18,53L18,55ZM29,115L29,114L29,115ZM24,107L23,105L24,106ZM24,99L23,100L23,99ZM27,91L27,93L26,92L26,91L26,90L27,91Z"]]};
+
+
+/**
+ * Override R.map with the dual-panel India / Southeast Asia schematic.
+ *
+ * What it does, in plain language:
+ *   1. Split markers into "india" vs "sea" panels by longitude.
+ *   2. Nudge overlapping markers apart so numbers stay readable.
+ *   3. Draw land shapes from GEO, then numbered coloured pins.
+ *   4. Build a matching numbered list under the SVG.
+ *
+ * Marker colour index (from PG map rows): 0 = blue, 1 = amber, 2 = cyan.
+ */
+R.map = function (t, a) {
+  var scale = 11.5;
+
+  // Panel geometry: where each region sits inside the SVG viewBox
+  var panels = {
+    india: { lon0: 67, lat1: 37.5, x: 0, w: 356, h: 362, id: "mc1", lb: "INDIA" },
+    sea: { lon0: 96, lat1: 21, x: 372, w: 184, h: 339, id: "mc2", lb: "SOUTHEAST ASIA" }
+  };
+  var colours = ["#2F6BFF", "#F59E2B", "#12B5CB"];
+
+  // Turn each PG map row into a point with original + adjustable x/y
+  var points = a.map(function (p, i) {
+    var coords = C[p[0]];
+    var region = coords[1] < 95 ? "india" : "sea";
+    var panel = panels[region];
+    var X = panel.x + (coords[1] - panel.lon0) * scale;
+    var Y = (panel.lat1 - coords[0]) * scale;
+    return { i: i, p: p, k: region, ox: X, oy: Y, x: X, y: Y };
+  });
+
+  // Push overlapping markers apart (simple physics-style loop)
+  ["india", "sea"].forEach(function (region) {
+    var group = points.filter(function (o) {
+      return o.k === region;
+    });
+    var panel = panels[region];
+    var pass;
+
+    for (pass = 0; pass < 60; pass++) {
+      group.forEach(function (A, ai) {
+        group.forEach(function (B, bi) {
+          if (bi <= ai) return;
+          var dx = B.x - A.x;
+          var dy = B.y - A.y;
+          var dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+          var minDist = 21;
+          if (dist < minDist) {
+            if (dist < 0.5) {
+              dx = 1;
+              dy = 0.3;
+              dist = 1.04;
+            }
+            var push = (minDist - dist) / 2 / dist;
+            A.x -= dx * push;
+            A.y -= dy * push;
+            B.x += dx * push;
+            B.y += dy * push;
+          }
+        });
+      });
+      // Keep markers inside the panel bounds
+      group.forEach(function (o) {
+        o.x = Math.max(panel.x + 14, Math.min(panel.x + panel.w - 14, o.x));
+        o.y = Math.max(30, Math.min(panel.h - 14, o.y));
+      });
+    }
+  });
+
+  // SVG pieces: clip paths, land panels, leader lines, numbered pins
+  var svg =
+    "<defs>" +
+    '<clipPath id="mc1"><rect width="356" height="362" rx="22"/></clipPath>' +
+    '<clipPath id="mc2"><rect width="184" height="339" rx="22"/></clipPath>' +
+    "</defs>";
+
+  ["india", "sea"].forEach(function (region) {
+    var panel = panels[region];
+    svg +=
+      '<g transform="translate(' + panel.x + ',0)">' +
+      '<rect width="' + panel.w + '" height="' + panel.h + '" rx="22" fill="#F1F6FF"/>' +
+      '<g clip-path="url(#' + panel.id + ')">' +
+      GEO[region]
+        .map(function (path) {
+          return '<path class="' + path[0] + '" d="' + path[1] + '"/>';
+        })
+        .join("") +
+      "</g>" +
+      '<text x="16" y="26" class="pl">' + panel.lb + "</text>" +
+      "</g>";
+  });
+
+  // Leader line from true lat/lon to nudged pin (only if we moved it)
+  points.forEach(function (o) {
+    var col = colours[o.p[3]];
+    if (Math.abs(o.x - o.ox) + Math.abs(o.y - o.oy) > 3) {
+      svg +=
+        '<line x1="' + o.ox + '" y1="' + o.oy + '" x2="' + o.x + '" y2="' + o.y + '"' +
+        ' stroke="' + col + '" stroke-width="1.4"/>' +
+        '<circle cx="' + o.ox + '" cy="' + o.oy + '" r="2.6" fill="' + col + '"/>';
+    }
+  });
+
+  // Numbered pin markers
+  points.forEach(function (o) {
+    var col = colours[o.p[3]];
+    svg +=
+      '<g class="mk" transform="translate(' + o.x + "," + o.y + ')">' +
+      '<circle class="pu" r="10" fill="' + col + '"/>' +
+      '<circle r="9" fill="' + col + '" stroke="#fff" stroke-width="2.2"/>' +
+      '<text y="3.4" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff" font-family="Inter,Arial,sans-serif">' +
+      (o.i + 1) +
+      "</text></g>";
+  });
+
+  // Numbered legend list under the map
+  var list = a
+    .map(function (p, i) {
+      return (
+        '<li><b style="background:' + colours[p[3]] + '">' + (i + 1) + "</b>" +
+        "<span>" + E(p[1]) +
+        "<small>" + E(p[2]) + " \u00b7 " + E(p[0]) + "</small></span></li>"
+      );
+    })
+    .join("");
+
+  return (
+    T(t) +
+    '<div class="mp">' +
+    '<svg viewBox="0 0 556 362" role="img" aria-label="' + E(t) + '">' +
+    svg +
+    "</svg><ol>" +
+    list +
+    "</ol></div>"
+  );
+};
+
+/* ============================================================
+ * 6) PAGE LOOKUPS & ACCENTS
+ *    Tables the router and sidebar use to find pages quickly.
+ * ============================================================ */
+
+/**
+ * Accent pairs per page index: [soft tint, strong accent].
+ * Soft tint  → CSS variable --t  (sidebar highlight background)
+ * Strong     → CSS variable --a  (dot colour, active border)
+ */
+var NT = [
+  ["#EAF1FF", "#2F6BFF"],
+  ["#FFF0E8", "#E8501F"],
+  ["#E8F8F1", "#169B6A"],
+  ["#F1ECFF", "#6A47F0"],
+  ["#FFF6DD", "#C98000"],
+  ["#FFEBF0", "#D93A62"],
+  ["#E3F7FA", "#0E94A6"],
+  ["#EFF3E2", "#5F7F10"],
+  ["#ECEDFF", "#4048D6"],
+  ["#FDEDDD", "#C4650E"]
+];
+
+/** Shorthand: $("vp") === document.getElementById("vp") */
+var $ = function (id) {
+  return document.getElementById(id);
+};
+
+/**
+ * BYK   = lookup a page by key, e.g. BYK["arsenal"]
+ * FEAT  = "Featured" keys shown first in the left sidebar
+ * MORE  = every other page, listed under "More pages"
+ * N     = total number of pages (for prev/next wrap-around)
+ * After the loop, every page also has p.i = its index in PG.
+ */
+var N = PG.length;
+var BYK = {};
+var FEAT = ["features", "functions", "business"];
+
+PG.forEach(function (p, i) {
+  p.i = i;
+  BYK[p.k] = p;
+});
+
+var MORE = PG.filter(function (p) {
+  return FEAT.indexOf(p.k) < 0;
+});
+
+/** Accent pair for a page: [soft, strong]. */
+function ac(p) {
+  return NT[p.i % NT.length];
+}
+
+/**
+ * Inline CSS variables for one page (applied on #vp and sidebar links).
+ * Example result: "--t:#FFEBF0;--a:#D93A62"
+ */
+function st(p) {
+  var n = ac(p);
+  return "--t:" + n[0] + ";--a:" + n[1];
+}
+
+/* ============================================================
+ * 7) SCROLL REVEAL
+ *    When a .b block enters the viewport, add class .in so CSS
+ *    can fade / slide it into view.
+ * ============================================================ */
+var io = null;
+
+if ("IntersectionObserver" in window) {
+  io = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          io.unobserve(entry.target); // animate once only
+        }
+      });
+    },
+    { threshold: 0.06, rootMargin: "0px 0px -4% 0px" }
+  );
+}
+
+/** Watch every .b block inside a root element (usually #vp). */
+function reveal(root) {
+  [].slice.call(root.querySelectorAll(".b")).forEach(function (block) {
+    if (io) io.observe(block);
+    else block.classList.add("in"); // no observer → show immediately
+  });
+}
+
+/* ============================================================
+ * 8) HASH ROUTING & DETAIL PAGE RENDERING
+ *    showPage(p) builds the full layout into #vp.
+ *    route() reads location.hash and calls showPage.
+ * ============================================================ */
+var vp = $("vp");
+
+/**
+ * One sidebar link for a portfolio page.
+ *   cur = true → add class "cur" (highlighted as the active page)
+ */
+function slink(p, cur) {
+  return (
+    '<a href="#' + p.k + '" style="' + st(p) + '" class="' + (cur ? "cur" : "") + '">' +
+    "<i></i>" + E(p.t) +
+    "</a>"
+  );
+}
+
+/**
+ * Build the entire detail page for one PG entry and put it in #vp.
+ *
+ * Layout written into #vp:
+ *   <div class="pgw">
+ *     <details class="side"> … Featured + More pages … </details>
+ *     <article class="pmain"> … crumb, title, blocks, prev/next … </article>
+ *     <aside class="toc"> … On this page jump links … </aside>
+ *   </div>
+ */
+function showPage(p) {
+  // Previous / next pages wrap around the PG list
+  var prev = PG[(p.i + N - 1) % N];
+  var next = PG[(p.i + 1) % N];
+  var isFeatured = FEAT.indexOf(p.k) >= 0;
+
+  // Page accent colours on the mount itself (sidebar uses --t / --a)
+  vp.style.cssText = st(p);
+
+  // --- Left sidebar links ---
+  var featuredLinks = FEAT.map(function (k) {
+    return slink(BYK[k], BYK[k] === p);
+  }).join("");
+
+  var moreLinks = MORE.map(function (q) {
+    return slink(q, q === p);
+  }).join("");
+
+  // --- Main article content blocks ---
+  var blocksHtml = p.b
+    .map(function (block) {
+      return '<div class="b">' + blk(block) + "</div>";
+    })
+    .join("");
+
+  // --- Assemble the full page HTML ---
+  vp.innerHTML =
+    '<div class="pgw">' +
+    // Left: collapsible on small screens (native <details>)
+    '<details class="side">' +
+    "<summary>Portfolio pages</summary>" +
+    '<div class="sl-in">' +
+    "<h5>Featured</h5>" +
+    featuredLinks +
+    "<h5>More pages</h5>" +
+    moreLinks +
+    "</div></details>" +
+    // Centre: breadcrumb, title, lede, blocks, prev/next
+    '<article class="pmain">' +
+    '<div class="crumb">' +
+    '<a href="#">ProcessIT Global</a><span>/</span>' +
+    "<span>Portfolio</span><span>/</span>" +
+    "<b>" + E(p.t) + "</b>" +
+    "</div>" +
+    '<div class="ptt">' +
+    "<h1>" + E(p.t) + "</h1>" +
+    '<span class="lbl">' + (isFeatured ? "Featured" : "Portfolio") + "</span>" +
+    "</div>" +
+    '<p class="lede">' + E(p.s) + "</p>" +
+    blocksHtml +
+    '<div class="nx">' +
+    '<a href="#' + prev.k + '"><small>&larr; Previous</small><strong>' + E(prev.t) + "</strong></a>" +
+    '<a href="#' + next.k + '"><small>Next &rarr;</small><strong>' + E(next.t) + "</strong></a>" +
+    "</div>" +
+    "</article>" +
+    // Right: filled in below after we know which h3 headings exist
+    '<aside class="toc" id="toc"></aside>' +
+    "</div>";
+
+  document.title = p.t + " | ProcessIT Global (extract)";
+  reveal(vp);
+
+  // Build the "On this page" TOC from every <h3> inside .b blocks
+  var headings = [].slice.call(vp.querySelectorAll(".b h3"));
+  var toc = $("toc");
+
+  if (headings.length) {
+    toc.innerHTML =
+      "<h5>On this page</h5>" +
+      headings
+        .map(function (h, i) {
+          h.id = "sec-" + i; // give the heading an id so we can scroll to it
+          return (
+            '<button type="button" data-t="sec-' + i + '">' +
+            h.innerHTML +
+            "</button>"
+          );
+        })
+        .join("");
+
+    [].slice.call(toc.querySelectorAll("button")).forEach(function (btn) {
+      btn.onclick = function () {
+        var el = $(btn.dataset.t);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+    });
+  } else {
+    toc.style.display = "none";
+  }
+
+  // On desktop, keep the sidebar open (mobile uses the <summary> toggle)
+  var side = vp.querySelector("details.side");
+  if (side && innerWidth > 980) side.open = true;
+}
+
+/**
+ * Highlight the TOC button for the heading currently near the top
+ * of the viewport (scroll spy).
+ */
+function tocSpy() {
+  var toc = $("toc");
+  if (!toc) return;
+
+  var headings = [].slice.call(vp.querySelectorAll(".b h3"));
+  var current = -1;
+
+  headings.forEach(function (h, i) {
+    if (h.getBoundingClientRect().top < innerHeight * 0.35) current = i;
+  });
+
+  [].slice.call(toc.querySelectorAll("button")).forEach(function (btn, i) {
+    btn.classList.toggle("cur", i === current);
+  });
+}
+
+/**
+ * Read the URL hash and show that page.
+ * Examples:
+ *   portfolio-details.html#arsenal  → Solutions arsenal
+ *   portfolio-details.html#track    → Track record
+ *   portfolio-details.html          → defaults to arsenal
+ */
+function route() {
+  var key = location.hash.slice(1); // strip the leading "#"
+  var page = BYK[key] || BYK.arsenal;
+  console.log("page===================>", page);
+  // console.log("BYK===================>", BYK);
+  // console.log("key===================>", key);
+  showPage(page);
+  window.scrollTo(0, 0);
+}
+
+// Re-run when the user clicks a sidebar / prev-next link (hash changes)
+addEventListener("hashchange", route);
+// Update TOC highlight while scrolling
+addEventListener("scroll", tocSpy, { passive: true });
+
+// First paint
+route();

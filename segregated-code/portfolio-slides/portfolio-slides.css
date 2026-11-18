@@ -5,38 +5,59 @@
  * Source: styles.css (carousel + slide-body block styles).
  * Live site still loads styles.css; this file is not linked from home.html.
  *
- * Covers:
- * - #slides / .cs   section shell + centered heading
- * - .stg / .sl      3D coverflow stage and slide cards (p0/p1/p2/p3)
- * - .ctl / .ar / .cnt  prev/next + counter
- * - .dts / .dt      pill/dot indicators
- * - .sg / .mc / .fx / .pvw / .kp / .ch …  slide body layouts
+ * What this file styles:
+ *   The 3D portfolio carousel ("coverflow") and the mini charts/cards
+ *   shown inside each slide. Slide HTML is built by portfolio-slides.js.
+ *
+ * How to read this file (beginner map):
+ *   1) :root / body     — colours and page base
+ *   2) Section heading  — .gh-sec / .gh-sh / .eb
+ *   3) 3D carousel      — .cs / .stg / .sl.p0–p3 (the important part!)
+ *   4) Slide header     — .sh title row + .go "Open" button
+ *   5) Slide body grids — .sg / .mc / .fx / .pvw
+ *   6) Controls         — .ctl arrows, .cnt counter, .dts dots
+ *   7) Content blocks   — .kp / .ch / .br / .dn / .how-acc … (inside slides)
+ *   8) Responsive       — stack / hide side slides on small screens
+ *
+ * CSS classes that move the cards in 3D (set by JS):
+ *   .sl.p0  — active card in the centre (facing you)
+ *   .sl.p1  — next card, angled to the right
+ *   .sl.p2  — previous card, angled to the left
+ *   .sl.p3  — all other cards, hidden off-stage
+ *
+ * Tip for designers:
+ *   Change --a / --t to recolour the active slide accent.
+ *   Tweak .sl.p1 / .sl.p2 transforms to change the 3D angle.
  */
 
+/* ---- Theme variables (shared colours) ---- */
 :root {
-  --fg: #1F2328;
-  --mu: #59636E;
-  --bd: #D1D9E0;
-  --bd2: #E6EAEF;
-  --sf: #F6F8FA;
-  --bl: #0969DA;
-  --brand: #0073DC;
-  --ink: #1F2328;
-  --ln: #D1D9E0;
-  --soft: #F6F8FA;
-  --blue: #2F6BFF;
-  --cy: #12B5CB;
-  --vio: #7B5CFA;
-  --cor: #FF6B4A;
-  --mint: #22B07D;
-  --amb: #F59E2B;
-  --rose: #F0567A;
-  --a: #2F6BFF;
-  --t: #EAF1FF;
+  --fg: #1F2328;       /* main text */
+  --mu: #59636E;       /* muted / grey text */
+  --bd: #D1D9E0;       /* primary border */
+  --bd2: #E6EAEF;      /* softer border */
+  --sf: #F6F8FA;       /* soft surface */
+  --bl: #0969DA;       /* link blue */
+  --brand: #0073DC;    /* brand blue */
+  --ink: #1F2328;      /* strong headings / numbers */
+  --ln: #D1D9E0;       /* alias for border (legacy name) */
+  --soft: #F6F8FA;     /* alias for soft surface */
+  --blue: #2F6BFF;     /* chart blue */
+  --cy: #12B5CB;       /* cyan (bar ends) */
+  --vio: #7B5CFA;      /* violet */
+  --cor: #FF6B4A;      /* coral (problem labels) */
+  --mint: #22B07D;     /* mint (solution labels) */
+  --amb: #F59E2B;      /* amber */
+  --rose: #F0567A;     /* rose */
+  --a: #2F6BFF;        /* active accent (JS overrides per slide) */
+  --t: #EAF1FF;        /* soft tint (JS overrides per slide) */
   color-scheme: light;
 }
 
-* { box-sizing: border-box; }
+/* Make padding/border count inside width/height */
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -44,25 +65,39 @@ body {
   color: var(--fg);
   font-family: Inter, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: hidden;          /* prevent horizontal scroll from 3D slides */
   font-size: 15px;
   line-height: 1.5;
 }
 
-a { color: inherit; text-decoration: none; }
-button { font-family: inherit; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Display / heading font (Plus Jakarta Sans) */
 h1, h2, h3, h4, .kp strong {
   font-family: "Plus Jakarta Sans", Inter, "Helvetica Neue", Arial, sans-serif;
 }
 
-.wrap { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+/* Centred content column used by the section heading */
+.wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
 
+/* Eyebrow pill above the section title, e.g. "Portfolio" */
 .eb {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 2px 11px;
-  border-radius: 999px;
+  border-radius: 999px;        /* fully rounded pill */
   border: 1px solid var(--bd);
   background: #fff;
   color: var(--mu);
@@ -70,82 +105,126 @@ h1, h2, h3, h4, .kp strong {
   line-height: 22px;
 }
 
-/* Section heading shell */
-.gh-sec { padding: 92px 0; }
+/* ============================================================
+ * SECTION HEADING SHELL
+ *   .gh-sec  — vertical padding for the whole section
+ *   .gh-sh   — title block (eyebrow + h2 + supporting sentence)
+ * ============================================================ */
+.gh-sec {
+  padding: 92px 0;
+}
+
 .gh-sh {
   max-width: 720px;
   margin-bottom: 44px;
   text-align: left;
 }
+
 .gh-sh h2 {
   margin: 16px 0 14px;
-  font-size: clamp(30px, 4vw, 52px);
+  font-size: clamp(30px, 4vw, 52px);   /* grows with viewport width */
   letter-spacing: -.04em;
   line-height: 1.06;
   font-weight: 800;
 }
+
 .gh-sh p {
   margin: 0;
   color: var(--mu);
   font-size: 19px;
   line-height: 1.6;
 }
+
+/* Centre the heading only inside the slides section */
 #slides .gh-sh {
   margin-left: auto;
   margin-right: auto;
   text-align: center;
 }
 
-/* ---------- Portfolio 3D carousel ---------- */
+/* ============================================================
+ * 3D CAROUSEL SHELL
+ *   .cs  — section background (soft blue gradient)
+ *   .stg — stage: all slide cards are stacked in the same grid cell
+ *          so JS can move them with 3D transforms
+ * ============================================================ */
 .cs {
   position: relative;
   padding: 84px 0 70px;
   background: linear-gradient(180deg, #fff, #F3F7FE 60%, #fff);
-  overflow-x: clip;
+  overflow-x: clip;            /* hide parts of angled side cards */
   overflow-y: visible;
   border-bottom: 1px solid var(--bd);
 }
-.cs .wrap { text-align: center; }
 
+.cs .wrap {
+  text-align: center;
+}
+
+/* Stage: perspective creates the 3D depth for rotateY / translateZ */
 .stg {
   position: relative;
-  perspective: 1800px;
+  perspective: 1800px;         /* camera distance — lower = stronger 3D */
   margin: 46px auto 0;
   max-width: 1240px;
   padding: 0 28px;
   display: grid;
   justify-items: center;
   outline: 0;
-  touch-action: pan-y;
+  touch-action: pan-y;         /* allow vertical scroll; JS handles swipe */
 }
 
+/* ============================================================
+ * SLIDE CARDS (.sl)
+ *   Every slide sits in the SAME grid cell (grid-area: 1 / 1).
+ *   JS adds .p0 / .p1 / .p2 / .p3 to place them in 3D space.
+ *
+ *   --a (accent) colours the top border and "Open" button.
+ *   JS sets --a / --t inline on each slide.
+ * ============================================================ */
 .sl {
-  grid-area: 1 / 1;
+  grid-area: 1 / 1;            /* all cards stack on top of each other */
   width: min(880px, 100%);
   background: #fff;
   border: 1px solid var(--ln);
-  border-top: 4px solid var(--a);
+  border-top: 4px solid var(--a);   /* coloured accent strip */
   border-radius: 12px;
   padding: 34px 36px 30px;
   box-shadow: 0 24px 60px rgba(31, 35, 40, .10);
-  transition: transform .95s cubic-bezier(.2, .8, .2, 1), opacity .7s, filter .7s;
+  transition:
+    transform .95s cubic-bezier(.2, .8, .2, 1),
+    opacity .7s,
+    filter .7s;
   cursor: pointer;
   text-align: left;
   position: relative;
 }
-.sl.p0 { transform: none; z-index: 3; opacity: 1; cursor: default; }
+
+/* Active (centre) slide — facing the user */
+.sl.p0 {
+  transform: none;
+  z-index: 3;
+  opacity: 1;
+  cursor: default;
+}
+
+/* Next slide — shifted right, rotated, pushed back in Z */
 .sl.p1 {
   transform: translateX(54%) translateZ(-280px) rotateY(-36deg) scale(.88);
   z-index: 2;
   opacity: .55;
-  filter: saturate(.7);
+  filter: saturate(.7);        /* slightly washed out so centre wins focus */
 }
+
+/* Previous slide — mirrored to the left */
 .sl.p2 {
   transform: translateX(-54%) translateZ(-280px) rotateY(36deg) scale(.88);
   z-index: 2;
   opacity: .55;
   filter: saturate(.7);
 }
+
+/* Off-stage slides — hidden until they become prev/next/active */
 .sl.p3 {
   opacity: 0;
   pointer-events: none;
@@ -154,9 +233,17 @@ h1, h2, h3, h4, .kp strong {
   z-index: 1;
   transition-delay: 0s, 0s, 0s, .9s;
 }
-.sl.p1:hover,
-.sl.p2:hover { opacity: .8; }
 
+/* Side slides brighten a bit on hover so they feel clickable */
+.sl.p1:hover,
+.sl.p2:hover {
+  opacity: .8;
+}
+
+/* ============================================================
+ * SLIDE HEADER (.sh) + OPEN BUTTON (.go)
+ *   Title row: eyebrow + h3 + lede on the left, "Open" CTA on the right.
+ * ============================================================ */
 .sl .sh {
   display: flex;
   justify-content: space-between;
@@ -165,6 +252,7 @@ h1, h2, h3, h4, .kp strong {
   margin-bottom: 22px;
   flex-wrap: wrap;
 }
+
 .sl .sh h3 {
   margin: 10px 0 6px;
   font-size: clamp(26px, 3vw, 36px);
@@ -172,6 +260,7 @@ h1, h2, h3, h4, .kp strong {
   line-height: 1.1;
   font-weight: 800;
 }
+
 .sl .sh p {
   margin: 0;
   color: var(--mu);
@@ -179,6 +268,8 @@ h1, h2, h3, h4, .kp strong {
   line-height: 1.55;
   max-width: 520px;
 }
+
+/* "Open" pill button — jumps to the full detail page (#pageKey) */
 .sl .go {
   display: inline-flex;
   align-items: center;
@@ -192,35 +283,63 @@ h1, h2, h3, h4, .kp strong {
   align-self: flex-start;
   margin-top: 6px;
 }
+
 .sl .go:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 26px color-mix(in srgb, var(--a) 35%, transparent);
 }
 
-/* Slide body grids */
-.sg { display: grid; gap: 12px; }
-.g-feat { grid-template-columns: repeat(3, 1fr); }
-.g-fn { grid-template-columns: repeat(3, 1fr); }
-.g-bz { grid-template-columns: repeat(2, 1fr); }
+/* ============================================================
+ * SLIDE BODY GRIDS
+ *   Different pages use different mini-layouts inside the card.
+ *   .sg       — generic grid wrapper
+ *   .g-feat   — Key features (3 columns of mini cards)
+ *   .g-fn     — Functionalities (3 columns of chips)
+ *   .g-bz     — Lines of business (2 columns)
+ *   .mc       — mini card (title + short paragraph)
+ *   .fx / .ft — functionality chip with coloured left border (--k)
+ *   .pvw      — "preview" wrapper that scales charts down for the slide
+ * ============================================================ */
+.sg {
+  display: grid;
+  gap: 12px;
+}
 
+.g-feat {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.g-fn {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.g-bz {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Mini content card used in feature / business previews */
 .mc {
   padding: 16px 18px;
   border-radius: 10px;
   background: #F6F8FA;
   border: 1px solid var(--bd2);
 }
+
 .mc b {
   display: block;
   font: 700 14.5px/1.3 "Plus Jakarta Sans", Arial, sans-serif;
   letter-spacing: -.01em;
   margin-bottom: 6px;
 }
+
 .mc p {
   margin: 0;
   font-size: 12.8px;
   line-height: 1.5;
   color: #4A5468;
 }
+
+/* Optional number badge inside a mini card, e.g. "01" */
 .mc .n {
   display: block;
   font: 800 12px "Plus Jakarta Sans", Arial, sans-serif;
@@ -229,7 +348,11 @@ h1, h2, h3, h4, .kp strong {
   letter-spacing: .06em;
 }
 
-/* Functionality chips (JS uses .fx; .ft was the earlier name in styles.css) */
+/*
+ * Functionality chips.
+ * JS uses class .fx; .ft is the older name kept for compatibility.
+ * --k is set inline by JS (product-family accent colour).
+ */
 .fx,
 .ft {
   display: flex;
@@ -239,18 +362,21 @@ h1, h2, h3, h4, .kp strong {
   border-radius: 10px;
   background: #F6F8FC;
   border: 1px solid transparent;
-  border-left: 4px solid var(--k);
+  border-left: 4px solid var(--k);   /* coloured accent strip */
 }
+
 .fx b,
 .ft b {
   font: 700 13.5px/1.3 "Plus Jakarta Sans", Arial, sans-serif;
 }
+
 .fx small,
 .ft small {
   font-size: 12px;
   color: var(--mu);
 }
 
+/* Compact chart/heading styles when charts sit inside a slide preview */
 .pvw h3,
 .pvw .sct {
   margin: 0 0 12px;
@@ -260,18 +386,43 @@ h1, h2, h3, h4, .kp strong {
   color: var(--mu);
   font-weight: 700;
 }
-.pvw > * + * { margin-top: 18px; }
+
+.pvw > * + * {
+  margin-top: 18px;            /* space between stacked preview blocks */
+}
+
 .pvw .kp {
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
-.pvw .kp div { padding: 16px; }
-.pvw .kp strong { font-size: 28px; }
-.pvw .dn svg { width: 118px; }
-.pvw .cl { height: 150px; }
-.pvw .br { margin: 9px 0; }
 
-/* Controls + counter + dots */
+.pvw .kp div {
+  padding: 16px;
+}
+
+.pvw .kp strong {
+  font-size: 28px;             /* smaller KPIs than the full detail page */
+}
+
+.pvw .dn svg {
+  width: 118px;
+}
+
+.pvw .cl {
+  height: 150px;
+}
+
+.pvw .br {
+  margin: 9px 0;
+}
+
+/* ============================================================
+ * CONTROLS: PREV / NEXT + COUNTER + DOTS
+ *   .ctl  — row with arrows and "01 / 10 · Title" counter
+ *   .ar   — circular prev/next arrow buttons
+ *   .cnt  — live counter text (updated by JS)
+ *   .dts  — row of small dots; .dt.on is the active elongated pill
+ * ============================================================ */
 .ctl {
   display: flex;
   justify-content: center;
@@ -280,6 +431,8 @@ h1, h2, h3, h4, .kp strong {
   margin-top: 30px;
   flex-wrap: wrap;
 }
+
+/* Reset browser button styles, then style as a soft circle */
 .ctl .ar {
   all: unset;
   box-sizing: border-box;
@@ -292,11 +445,13 @@ h1, h2, h3, h4, .kp strong {
   border-radius: 50%;
   transition: .2s;
 }
+
 .ctl .ar:hover,
 .ctl .ar:focus-visible {
   color: var(--ink);
   background: #EDF0F6;
 }
+
 .ctl .ar svg {
   width: 20px;
   height: 20px;
@@ -306,6 +461,8 @@ h1, h2, h3, h4, .kp strong {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+/* Counter between the arrows, e.g. "09 / 10 · BFSI compliance" */
 .cnt {
   min-width: min(300px, 60vw);
   text-align: center;
@@ -313,10 +470,13 @@ h1, h2, h3, h4, .kp strong {
   letter-spacing: .06em;
   color: var(--mu);
 }
+
 .cnt b {
   color: var(--ink);
   font-family: "Plus Jakarta Sans", Arial, sans-serif;
 }
+
+/* Dot indicators under the controls (one per slide) */
 .dts {
   display: flex;
   gap: 7px;
@@ -324,6 +484,8 @@ h1, h2, h3, h4, .kp strong {
   margin-top: 18px;
   flex-wrap: wrap;
 }
+
+/* Inactive dot — small grey circle */
 .dt {
   all: unset;
   box-sizing: border-box;
@@ -334,24 +496,57 @@ h1, h2, h3, h4, .kp strong {
   cursor: pointer;
   transition: width .35s, background .3s;
 }
-.dt:hover { background: #9AA6BC; }
+
+.dt:hover {
+  background: #9AA6BC;
+}
+
+/* Active dot — stretches into a short pill and uses the slide accent */
 .dt.on {
   width: 24px;
   background: var(--a);
 }
+
 .dt:focus-visible {
   outline: 2px solid var(--a);
   outline-offset: 3px;
 }
 
-/* ---------- Block styles used inside slide bodies ---------- */
+/* ============================================================
+ * CONTENT BLOCKS USED INSIDE SLIDE BODIES
+ *   Same component names as the detail pages, but sized for the card.
+ *   HTML for these is built by portfolio-slides.js (R{} / slideBody).
+ *
+ *   .g2 / .g3  — 2- or 3-column grids
+ *   .c         — content card
+ *   .kp        — big number / KPI strip
+ *   .ch        — pill chips
+ *   .br        — horizontal bar chart
+ *   .dn / .lgd — donut + legend
+ *   .cl        — vertical columns
+ *   .pr        — mandate → solution pair
+ *   .how-acc   — problem / answer accordion
+ * ============================================================ */
 .g2,
 .g3,
-.kp { display: grid; gap: 14px; }
-.g2 { grid-template-columns: repeat(2, 1fr); }
-.g3 { grid-template-columns: repeat(3, 1fr); }
-.kp { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.kp {
+  display: grid;
+  gap: 14px;
+}
 
+.g2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.g3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.kp {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+/* Generic content card */
 .c {
   position: relative;
   padding: 22px;
@@ -360,11 +555,17 @@ h1, h2, h3, h4, .kp strong {
   border: 1px solid var(--bd);
   transition: box-shadow .25s, border-color .25s;
 }
+
 .c:hover {
   box-shadow: 0 8px 24px rgba(31, 35, 40, .08);
   border-color: #9AA4B1;
 }
-.c[style*="--k"] { box-shadow: inset 0 3px 0 var(--k); }
+
+/* When JS sets --k, draw a coloured top inset stripe */
+.c[style*="--k"] {
+  box-shadow: inset 0 3px 0 var(--k);
+}
+
 .c h4 {
   margin: 0 0 8px;
   font-size: 17px;
@@ -372,12 +573,15 @@ h1, h2, h3, h4, .kp strong {
   letter-spacing: -.015em;
   font-weight: 700;
 }
+
 .c p {
   margin: 0;
   font-size: 14.5px;
   line-height: 1.6;
   color: #4A5468;
 }
+
+/* Optional "01 / 02" number above a card title */
 .c .n {
   display: block;
   font: 800 12.5px "Plus Jakarta Sans", Arial, sans-serif;
@@ -386,12 +590,14 @@ h1, h2, h3, h4, .kp strong {
   letter-spacing: .06em;
 }
 
+/* KPI cell: big number + short label */
 .kp div {
   padding: 24px 22px;
   border-radius: 12px;
   background: #F6F8FA;
   border: 1px solid var(--bd);
 }
+
 .kp strong {
   display: block;
   font-size: clamp(36px, 4.4vw, 52px);
@@ -400,6 +606,7 @@ h1, h2, h3, h4, .kp strong {
   line-height: 1;
   color: var(--ink);
 }
+
 .kp span {
   display: block;
   margin-top: 10px;
@@ -408,11 +615,13 @@ h1, h2, h3, h4, .kp strong {
   line-height: 1.4;
 }
 
+/* Pill / chip row */
 .ch {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
+
 .ch span {
   padding: 9px 16px;
   border-radius: 999px;
@@ -422,6 +631,7 @@ h1, h2, h3, h4, .kp strong {
   border: 1px solid var(--ln);
 }
 
+/* Horizontal bar: label | track | value */
 .br {
   display: grid;
   grid-template-columns: minmax(120px, 190px) 1fr 52px;
@@ -430,12 +640,15 @@ h1, h2, h3, h4, .kp strong {
   font-size: 14px;
   margin: 12px 0;
 }
+
 .br div {
   height: 12px;
-  background: #EEF0F4;
+  background: #EEF0F4;         /* empty track */
   border-radius: 8px;
   overflow: hidden;
 }
+
+/* Filled portion — width is set inline by JS as a % */
 .br i {
   display: block;
   height: 100%;
@@ -443,56 +656,66 @@ h1, h2, h3, h4, .kp strong {
   background: linear-gradient(90deg, var(--blue), var(--cy));
   transform-origin: left;
 }
+
 .br em {
   font-style: normal;
   text-align: right;
   font-weight: 700;
 }
 
+/* Donut chart + legend */
 .dn {
   display: flex;
   gap: 24px;
   align-items: center;
   flex-wrap: wrap;
 }
+
 .dn svg {
   width: 160px;
   flex: none;
-  transform: rotate(-90deg);
+  transform: rotate(-90deg);   /* start the first slice at 12 o'clock */
 }
+
 .dn circle {
   fill: none;
   stroke-width: 5.2;
   stroke-linecap: butt;
 }
+
 .lgd {
   flex: 1;
   min-width: 160px;
   font-size: 13.5px;
 }
+
 .lgd div {
   display: flex;
   gap: 10px;
   align-items: center;
   margin: 9px 0;
 }
+
 .lgd i {
   width: 11px;
   height: 11px;
   border-radius: 4px;
   flex: none;
 }
+
 .lgd b {
   margin-left: auto;
   font-weight: 700;
 }
 
+/* Vertical column chart — columns grow upward from the baseline */
 .cl {
   display: flex;
   align-items: flex-end;
   gap: 12px;
   height: 180px;
 }
+
 .cl > div {
   flex: 1;
   display: flex;
@@ -503,10 +726,13 @@ h1, h2, h3, h4, .kp strong {
   color: var(--mu);
   text-align: center;
 }
+
 .cl b {
   font: 700 13px "Plus Jakarta Sans", Arial, sans-serif;
   color: var(--ink);
 }
+
+/* Filled column — height is set inline by JS as a % */
 .cl i {
   display: block;
   width: 100%;
@@ -515,6 +741,7 @@ h1, h2, h3, h4, .kp strong {
   background: linear-gradient(180deg, var(--blue), var(--cy));
 }
 
+/* Mandate → solution pair (left card, arrow, right card) */
 .pr {
   display: grid;
   grid-template-columns: 1fr 34px 1fr;
@@ -522,23 +749,41 @@ h1, h2, h3, h4, .kp strong {
   align-items: stretch;
   margin-bottom: 12px;
 }
+
 .pr > span {
   display: grid;
   place-items: center;
   color: var(--blue);
   font-size: 18px;
 }
-.pr .c:first-child { --p: #FFF8F5; }
-.pr .c:last-child { --p: #F3FBF6; }
-.pr .c:first-child .n { color: var(--cor); }
-.pr .c:last-child .n { color: var(--mint); }
 
+.pr .c:first-child {
+  --p: #FFF8F5;                /* warm tint for the "mandate" side */
+}
+
+.pr .c:last-child {
+  --p: #F3FBF6;                /* cool tint for the "solution" side */
+}
+
+.pr .c:first-child .n {
+  color: var(--cor);
+}
+
+.pr .c:last-child .n {
+  color: var(--mint);
+}
+
+/* ============================================================
+ * PROBLEM / ANSWER ACCORDION (.how-acc)
+ *   Native <details>/<summary>. Closed = problem (warm). Open = answer (mint).
+ * ============================================================ */
 .how-acc {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 14px;
 }
+
 .how-acc details {
   flex: 1 1 auto;
   min-width: 0;
@@ -549,15 +794,24 @@ h1, h2, h3, h4, .kp strong {
   background: #fff;
   overflow: hidden;
 }
+
 .how-acc summary {
-  list-style: none;
+  list-style: none;            /* hide the default triangle */
   cursor: pointer;
   position: relative;
-  padding: 22px 52px 22px 22px;
+  padding: 22px 52px 22px 22px; /* leave room for the +/- circle */
   background: #FFF8F5;
 }
-.how-acc summary::-webkit-details-marker { display: none; }
-.how-acc summary::marker { content: ""; }
+
+.how-acc summary::-webkit-details-marker {
+  display: none;
+}
+
+.how-acc summary::marker {
+  content: "";
+}
+
+/* Custom +/- toggle drawn with CSS */
 .how-acc summary::after {
   content: "+";
   position: absolute;
@@ -573,7 +827,11 @@ h1, h2, h3, h4, .kp strong {
   font: 600 16px/1 Inter, Arial, sans-serif;
   color: var(--fg);
 }
-.how-acc details[open] summary::after { content: "\2212"; }
+
+.how-acc details[open] summary::after {
+  content: "\2212";            /* minus sign when open */
+}
+
 .how-acc .how-k {
   display: block;
   margin-bottom: 12px;
@@ -581,7 +839,11 @@ h1, h2, h3, h4, .kp strong {
   letter-spacing: .06em;
   text-transform: uppercase;
 }
-.how-acc summary .how-k { color: var(--cor); }
+
+.how-acc summary .how-k {
+  color: var(--cor);           /* "PROBLEM" label */
+}
+
 .how-acc .how-q {
   display: block;
   margin: 0 0 8px;
@@ -589,6 +851,7 @@ h1, h2, h3, h4, .kp strong {
   letter-spacing: -.015em;
   color: var(--fg);
 }
+
 .how-acc .how-d {
   display: block;
   margin: 0;
@@ -596,15 +859,19 @@ h1, h2, h3, h4, .kp strong {
   line-height: 1.6;
   color: #4A5468;
 }
+
+/* Answer panel shown when the row is open */
 .how-acc .how-a {
   padding: 18px 22px 22px;
   background: #F3FBF6;
   border-top: 1px solid var(--bd2);
 }
+
 .how-acc .how-a .how-k {
-  color: var(--mint);
+  color: var(--mint);          /* "SOLUTION" / "PITG answer" label */
   margin-bottom: 8px;
 }
+
 .how-acc .how-a p {
   margin: 0;
   font: 700 17px/1.3 "Plus Jakarta Sans", Arial, sans-serif;
@@ -612,11 +879,20 @@ h1, h2, h3, h4, .kp strong {
   color: var(--fg);
 }
 
+/* ============================================================
+ * RESPONSIVE BREAKPOINTS
+ *   980px — tighter page padding
+ *   900px — hide side slides; stack grids to 1–2 columns
+ *   560px — single-column slide body grids
+ * ============================================================ */
 @media (max-width: 980px) {
-  .wrap { padding: 0 20px; }
+  .wrap {
+    padding: 0 20px;
+  }
 }
 
 @media (max-width: 900px) {
+  /* On tablets, only show the centre slide (no 3D side cards) */
   .sl.p1,
   .sl.p2,
   .sl.p3 {
@@ -625,19 +901,40 @@ h1, h2, h3, h4, .kp strong {
     pointer-events: none;
     visibility: hidden;
   }
-  .sl { padding: 26px 22px; }
+
+  .sl {
+    padding: 26px 22px;
+  }
+
   .g-feat,
-  .g-fn { grid-template-columns: 1fr 1fr; }
-  .stg { padding: 0 16px; }
+  .g-fn {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stg {
+    padding: 0 16px;
+  }
+
   .g2,
   .g3,
-  .pr { grid-template-columns: 1fr; }
-  .pr > span { transform: rotate(90deg); }
+  .pr {
+    grid-template-columns: 1fr;
+  }
+
+  /* Arrow between pair cards rotates when stacked vertically */
+  .pr > span {
+    transform: rotate(90deg);
+  }
 }
 
 @media (max-width: 560px) {
   .g-feat,
   .g-fn,
-  .g-bz { grid-template-columns: 1fr; }
-  .pvw .kp { grid-template-columns: repeat(2, 1fr); }
+  .g-bz {
+    grid-template-columns: 1fr;
+  }
+
+  .pvw .kp {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

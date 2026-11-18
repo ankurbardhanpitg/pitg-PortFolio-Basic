@@ -1,0 +1,57 @@
+<!--
+  ProcessIT Global — portfolio-details.html
+  -----------------------------------------
+  COPIED EXTRACT for designers / reference only.
+  Live site still uses: home.html (#vp mount, lines ~104–105) + script.js + styles.css.
+  Do not treat this folder as wired into the main page unless you link it yourself.
+
+  What this page is:
+    The hash-routed portfolio DETAIL view. On the live site this mounts inside
+    <div id="vp"> when you open a URL like home.html#arsenal.
+
+  What you will see when you open this file:
+    ┌─────────────┬──────────────────────────────┬──────────────┐
+    │ Left sidebar│  Main article                │ Right TOC    │
+    │ Featured +  │  breadcrumb, title, badge,   │ "On this     │
+    │ More pages  │  lede, charts/cards, prev/next│  page" links │
+    └─────────────┴──────────────────────────────┴──────────────┘
+
+  How the pieces connect:
+    1. This HTML only provides an empty #vp box.
+    2. portfolio-details.js fills #vp with the full page (showPage).
+    3. portfolio-details.css styles sidebar, article, TOC, and blocks.
+
+  Try these URLs after opening the file:
+    portfolio-details.html           → Solutions arsenal (default)
+    portfolio-details.html#arsenal   → same page
+    portfolio-details.html#track     → Track record
+    portfolio-details.html#features  → Key features
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pitg / portfolio-details (extract)</title>
+
+  <!-- Same fonts as the live site (Inter for body, Plus Jakarta Sans for headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Detail-page styles only (not the full site stylesheet) -->
+  <link rel="stylesheet" href="portfolio-details.css">
+</head>
+<body>
+
+  <!--
+    Detail page mount (same role as home.html #vp).
+    Starts empty. portfolio-details.js injects:
+      .pgw → .side (nav) + .pmain (article) + .toc (on-this-page)
+  -->
+  <div id="vp"></div>
+
+  <!-- All page data, renderers, and routing live in this script -->
+  <script src="portfolio-details.js"></script>
+</body>
+</html>
