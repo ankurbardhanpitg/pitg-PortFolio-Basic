@@ -143,18 +143,143 @@ function initFooter(){
   var fcols=$("fcols");if(!fcols)return;
   fcols.innerHTML=GR.map(function(g){return'<div class="fcol"><h5>'+g[0]+"</h5>"+g[1].map(function(k){return'<a href="#'+k+'">'+E(BYK[k].t)+"</a>"}).join("")+(g[0]==="Company"?'<a href="https://www.processitglobal.com" target="_blank" rel="noopener">www.processitglobal.com</a>':"")+"</div>"}).join("");
 }
-/* ---------- Hero portfolio-map SVG (#hv) ---------- */
-function initPortfolioMap(){
-  var hv=$("hv");if(!hv)return;
-  var logo=document.querySelector(".gh-logo img");
-  var logoSrc=LG||(logo?logo.src:"");
-  var cx=260,cy=230,rx=205,ry=172;
-  var s='<svg viewBox="0 0 520 460" role="img" aria-label="ProcessIT Global portfolio pages"><ellipse class="ring" cx="'+cx+'" cy="'+cy+'" rx="112" ry="96"/>';
-  PG.forEach(function(p,i){var t=(-90+i*36)*Math.PI/180,x=cx+rx*Math.cos(t),y=cy+ry*Math.sin(t),sx=cx+112*Math.cos(t),sy=cy+96*Math.sin(t),n=NT[i%NT.length],k=(i%2?1:-1)*.1,mx=(sx+x)/2-(y-sy)*k,my=(sy+y)/2+(x-sx)*k,d="M"+sx+","+sy+" Q"+mx+","+my+" "+x+","+y;s+='<path class="ed" d="'+d+'"/><circle r="3.4" fill="'+n[1]+'"><animateMotion dur="'+(4+i%4*.9)+'s" begin="'+(i*.45)+'s" repeatCount="indefinite" path="'+d+'"/></circle>'});
-  s+='<defs><filter id="lbsh" x="-20%" y="-40%" width="140%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#1F2328" flood-opacity=".08"/></filter></defs>';
-  PG.forEach(function(p,i){var t=(-90+i*36)*Math.PI/180,x=cx+rx*Math.cos(t),y=cy+ry*Math.sin(t),n=NT[i%NT.length];var tw=Math.max(p.t.length*7.35+22,72),th=26,lx=x-tw/2,ly=y-th/2;s+='<a href="#'+p.k+'" aria-label="'+E(p.t)+'"><g class="lb"><rect x="'+lx+'" y="'+ly+'" width="'+tw+'" height="'+th+'" rx="13" ry="13" fill="#fff" stroke="'+n[1]+'" stroke-width="1.2" filter="url(#lbsh)"/><text x="'+x+'" y="'+(y+4.5)+'" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">'+E(p.t)+"</text></g></a>"});
-  s+='<circle cx="'+cx+'" cy="'+cy+'" r="62" fill="#fff" stroke="#DCE5F4"/><image href="'+logoSrc+'" x="'+(cx-44)+'" y="'+(cy-33)+'" width="88" height="66"/></svg>';
-  hv.innerHTML=s;
+/* ---------- Hero portfolio-map SVG (#hv) ----------
+ * Builds a circular "constellation" diagram of all portfolio pages.
+ *
+ * Visual layout (imagine a clock face):
+ *   - Center: white disc + company logo
+ *   - Middle: dashed ellipse ring around the logo
+ *   - Outer: one label pill per page, spaced evenly around an ellipse
+ *   - Spokes: curved dashed lines from the ring to each pill
+ *   - Dots: small coloured circles that animate along each spoke
+ *
+ * Draw order matters in SVG (later markup paints on top of earlier markup):
+ *   1. Dashed inner ring
+ *   2. Curved spokes + animated dots
+ *   3. Drop-shadow filter definition (for label pills)
+ *   4. Label pills (linked to #pageKey)
+ *   5. Center logo disc (covers spoke start points)
+ */
+function initPortfolioMap() {
+  // Mount point in the HTML: <div class="gh-wc hv" id="hv"></div>
+  var hv = $("hv");
+  if (!hv) return;
+
+  // Logo URL: optional LG override, otherwise the header logo <img>
+  var logo = document.querySelector(".gh-logo img");
+  var logoSrc = LG || (logo ? logo.src : "");
+
+  // --- Layout geometry (SVG user units; viewBox is 520 × 460) ---
+  // cx, cy : center of the map (logo sits here)
+  // rx, ry : outer ellipse radii where label pills are placed
+  //          (rx ≠ ry → wider-than-tall ellipse, fits the hero window better)
+  var cx = 260;
+  var cy = 230;
+  var rx = 205;
+  var ry = 172;
+
+  // Inner dashed ring radii (also used as the spoke start points)
+  var innerRx = 112;
+  var innerRy = 96;
+
+  // Degrees between each of the 10 pages around the ellipse (360 / 10)
+  var stepDeg = 36;
+
+  // Start the SVG string: root element + dashed ring around the logo
+  var s =
+    '<svg viewBox="0 0 520 460" role="img" aria-label="ProcessIT Global portfolio pages">' +
+    '<ellipse class="ring" cx="' + cx + '" cy="' + cy + '" rx="' + innerRx + '" ry="' + innerRy + '"/>';
+
+  // --- Pass 1: spokes (dashed curves) + animated coloured dots ---
+  // Angle -90° starts at 12 o'clock, then we walk clockwise.
+  PG.forEach(function (p, i) {
+    // Convert degrees → radians for Math.cos / Math.sin
+    var angle = (-90 + i * stepDeg) * Math.PI / 180;
+
+    // Outer point (x, y): where the label pill will sit
+    var x = cx + rx * Math.cos(angle);
+    var y = cy + ry * Math.sin(angle);
+
+    // Inner point (sx, sy): where the spoke leaves the dashed ring
+    var sx = cx + innerRx * Math.cos(angle);
+    var sy = cy + innerRy * Math.sin(angle);
+
+    // Accent colour for this node — NT[i] = [softFill, accentColour]
+    var accent = NT[i % NT.length];
+    var accentColour = accent[1];
+
+    // Slight left/right bend so spokes are curved, not straight lines.
+    // bend alternates sign so neighbouring curves lean opposite ways.
+    var bend = (i % 2 ? 1 : -1) * 0.1;
+
+    // Quadratic Bezier control point (mx, my), offset perpendicular to the spoke
+    var mx = (sx + x) / 2 - (y - sy) * bend;
+    var my = (sy + y) / 2 + (x - sx) * bend;
+
+    // SVG path data: Move to inner point → Quadratic curve to outer point
+    // "M x,y" = move; "Q cx,cy x,y" = quadratic Bezier through control point
+    var pathD = "M" + sx + "," + sy + " Q" + mx + "," + my + " " + x + "," + y;
+
+    // Stagger animation so dots do not all move in sync
+    var duration = 4 + (i % 4) * 0.9; // seconds
+    var delay = i * 0.45;             // seconds
+
+    // Dashed edge (.ed styled in CSS) + coloured dot travelling along the path
+    s +=
+      '<path class="ed" d="' + pathD + '"/>' +
+      '<circle r="3.4" fill="' + accentColour + '">' +
+      '<animateMotion dur="' + duration + 's" begin="' + delay + 's" repeatCount="indefinite" path="' + pathD + '"/>' +
+      "</circle>";
+  });
+
+  // Soft drop-shadow filter reused by every label pill (referenced via url(#lbsh))
+  s +=
+    '<defs>' +
+    '<filter id="lbsh" x="-20%" y="-40%" width="140%" height="180%">' +
+    '<feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#1F2328" flood-opacity=".08"/>' +
+    "</filter>" +
+    "</defs>";
+
+  // --- Pass 2: label pills (must come after spokes so they paint on top) ---
+  // Same angles as Pass 1 so each pill lines up with its spoke end.
+  PG.forEach(function (p, i) {
+    var angle = (-90 + i * stepDeg) * Math.PI / 180;
+    var x = cx + rx * Math.cos(angle);
+    var y = cy + ry * Math.sin(angle);
+    var accent = NT[i % NT.length];
+    var accentColour = accent[1];
+
+    // Pill size: width grows with title length; height is fixed
+    var pillWidth = Math.max(p.t.length * 7.35 + 22, 72); // min width 72
+    var pillHeight = 26;
+
+    // Top-left of the rounded rect (centered on the outer point x, y)
+    var rectX = x - pillWidth / 2;
+    var rectY = y - pillHeight / 2;
+
+    // <a> wraps the pill so clicks navigate to #pageKey (hash router)
+    s +=
+      '<a href="#' + p.k + '" aria-label="' + E(p.t) + '">' +
+      '<g class="lb">' +
+      '<rect x="' + rectX + '" y="' + rectY + '" width="' + pillWidth + '" height="' + pillHeight + '" rx="13" ry="13" fill="#fff" stroke="' + accentColour + '" stroke-width="1.2" filter="url(#lbsh)"/>' +
+      // text y offset (+4.5) optically centers the baseline inside the pill
+      '<text x="' + x + '" y="' + (y + 4.5) + '" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">' +
+      E(p.t) +
+      "</text>" +
+      "</g>" +
+      "</a>";
+  });
+
+  // --- Center logo (drawn last so it covers the inner ends of the spokes) ---
+  var logoW = 88;
+  var logoH = 66;
+  s +=
+    '<circle cx="' + cx + '" cy="' + cy + '" r="62" fill="#fff" stroke="#DCE5F4"/>' +
+    '<image href="' + logoSrc + '" x="' + (cx - logoW / 2) + '" y="' + (cy - logoH / 2) + '" width="' + logoW + '" height="' + logoH + '"/>' +
+    "</svg>";
+
+  // Inject the finished SVG into the hero mount point
+  hv.innerHTML = s;
 }
 /* ---------- Home KPI strip (subset of 'what' page KPIs) ---------- */
 (function(){var kp=BYK.what.b.filter(function(x){return x[0]==="kp"})[0][1];$("sti").innerHTML=[0,3,4,5].map(function(i){return"<div><strong>"+E(kp[i][0])+"</strong><span>"+E(kp[i][1])+"</span></div>"}).join("")})();

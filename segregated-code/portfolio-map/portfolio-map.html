@@ -1,0 +1,37 @@
+<!--
+  ProcessIT Global — portfolio-map.html
+  -------------------------------------
+  COPIED EXTRACT for designers / reference only.
+  Live site still uses: home.html (lines ~38–45) + script.js + styles.css.
+  Do not treat this folder as wired into the main page unless you link it yourself.
+
+  What this is:
+  The chrome window titled "pitg / portfolio-map" and the #hv mount where
+  the circular SVG map (center logo + 10 labelled pages) is injected by JS.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pitg / portfolio-map (extract)</title>
+  <link rel="stylesheet" href="portfolio-map.css">
+</head>
+<body>
+
+  <!-- Same structure as home.html hero right column -->
+  <div class="gh-win">
+    <div class="gh-wb">
+      <i></i><i></i><i></i>
+      <span>pitg / portfolio-map</span>
+    </div>
+    <!-- SVG circular map is injected here by portfolio-map.js -->
+    <div class="gh-wc hv" id="hv"></div>
+  </div>
+
+  <!-- Hidden logo source used by the map center image (same as site header logo) -->
+  <img class="gh-logo-src" src="../assets/logo.png" alt="" hidden>
+
+  <script src="portfolio-map.js"></script>
+</body>
+</html>
