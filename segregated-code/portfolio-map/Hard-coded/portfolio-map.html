@@ -1,0 +1,299 @@
+<!--
+  ProcessIT Global — Hard-coded / portfolio-map.html
+  -------------------------------------------------
+  LEARNING / REFERENCE extract for designers and beginners.
+
+  What this page is:
+    A fake "browser window" that shows a circular portfolio map.
+    Center = company logo. Around it = 10 clickable page labels
+    connected by dashed curved lines (spokes) with tiny moving dots.
+
+  Hard-coded vs dynamic (../portfolio-map.js):
+    The sibling folder builds this SVG with JavaScript from a data list.
+    HERE every path, colour, title, and link is written directly in HTML.
+    That makes the structure easy to read and edit without knowing JS loops.
+
+  File roles in this folder:
+    portfolio-map.html  → structure (this file) — all map markup lives here
+    portfolio-map.css   → look (colours, window chrome, hover styles)
+    portfolio-map.js    → behaviour only (click press feedback)
+
+  How to read this file (beginner map):
+    1) .gh-win / .gh-wb     — fake window frame + title bar
+    2) #hv > svg            — the circular map canvas (520 × 460 units)
+    3) .ring                — dashed ellipse around the logo
+    4) .ed + circle         — one spoke + one animated colour dot per page
+    5) <defs> filter        — soft shadow reused by every label pill
+    6) <a> … .lb            — clickable label pills (title + coloured border)
+    7) center circle/image  — white disc + logo (drawn last, on top)
+
+  Geometry tip (same numbers the dynamic JS uses):
+    Center of map:  cx=260, cy=230
+    Label ellipse:  rx=205, ry=172  (wider than tall)
+    Inner ring:     rx=112, ry=96
+    10 pages → 36° apart, starting at 12 o'clock, going clockwise.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Makes the layout scale on phones / tablets -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pitg / portfolio-map (hard-coded)</title>
+  <!-- Styles for the window chrome and the SVG map -->
+  <link rel="stylesheet" href="portfolio-map.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       FAKE WINDOW SHELL
+       Looks like a small app / IDE window:
+         .gh-win  = white card with border + shadow
+         .gh-wb   = grey title bar (three dots + title text)
+         .gh-wc   = content area that holds the SVG map
+       ============================================================ -->
+  <div class="gh-win">
+
+    <!-- Title bar: three <i> tags = traffic-light dots; <span> = window name -->
+    <div class="gh-wb">
+      <i></i><i></i><i></i>
+      <span>pitg / portfolio-map</span>
+    </div>
+
+    <!--
+      Map mount (#hv).
+      class "hv" is used by CSS to style elements INSIDE the SVG
+      (.ed spokes, .ring, .lb labels). id "hv" is used by JS to find links.
+    -->
+    <div class="gh-wc hv" id="hv">
+
+      <!--
+        SVG canvas.
+        viewBox="0 0 520 460" = internal coordinate system (not CSS pixels).
+        The CSS makes this SVG stretch to the window width while keeping ratio.
+        role + aria-label help screen readers describe the graphic.
+      -->
+      <svg viewBox="0 0 520 460" role="img" aria-label="ProcessIT Global portfolio pages">
+
+        <!-- ========================================================
+             LAYER 1 — Dashed ring around the logo
+             cx/cy = center; rx/ry = horizontal / vertical radius.
+             Styled by CSS class .ring (stroke + dash pattern).
+             ======================================================== -->
+        <ellipse class="ring" cx="260" cy="230" rx="112" ry="96"/>
+
+        <!-- ========================================================
+             LAYER 2 — Spokes + animated dots (10 pages)
+
+             Each page has:
+               1) <path class="ed">  — dashed curved line from the ring
+                                       out to where the label pill sits
+               2) <circle>           — tiny coloured dot
+               3) <animateMotion>    — moves that dot along the SAME path
+
+             Path syntax (quick SVG primer):
+               M x,y     = Move to start point (on the inner ring)
+               Q mx,my x,y = Quadratic curve via control point (mx,my)
+                             to the outer end (label position)
+
+             animateMotion attributes:
+               dur          = how long one trip takes (seconds)
+               begin        = delay before starting (staggered so dots
+                              do not all move in sync)
+               repeatCount  = "indefinite" = loop forever
+               path         = must match the sibling <path> "d" value
+
+             Order is clockwise from the top (12 o'clock).
+             ======================================================== -->
+
+        <!-- 0 · top · What PITG does · blue -->
+        <path class="ed" d="M260,134 Q252.4,96 260,58"/>
+        <circle r="3.4" fill="#2F6BFF">
+          <animateMotion dur="4s" begin="0s" repeatCount="indefinite" path="M260,134 Q252.4,96 260,58"/>
+        </circle>
+
+        <!-- 1 · upper-right · The problem · orange -->
+        <path class="ed" d="M325.83194825675696,152.33436854000504 Q359.3124916456066,127.05812560007705 380.495976719957,90.84907696750903"/>
+        <circle r="3.4" fill="#E8501F">
+          <animateMotion dur="4.9s" begin="0.45s" repeatCount="indefinite" path="M325.83194825675696,152.33436854000504 Q359.3124916456066,127.05812560007705 380.495976719957,90.84907696750903"/>
+        </circle>
+
+        <!-- 2 · mid-right · Lines of business · green -->
+        <path class="ed" d="M366.5183298250572,200.33436854000504 Q408.39392867553227,179.7468971522121 454.96658584050647,176.84907696750906"/>
+        <circle r="3.4" fill="#169B6A">
+          <animateMotion dur="5.8s" begin="0.9s" repeatCount="indefinite" path="M366.5183298250572,200.33436854000504 Q408.39392867553227,179.7468971522121 454.96658584050647,176.84907696750906"/>
+        </circle>
+
+        <!-- 3 · lower-right · Functionalities · purple -->
+        <path class="ed" d="M366.5183298250572,259.6656314599949 Q408.39392867553227,280.2531028477879 454.96658584050647,283.15092303249094"/>
+        <circle r="3.4" fill="#6A47F0">
+          <animateMotion dur="6.7s" begin="1.35s" repeatCount="indefinite" path="M366.5183298250572,259.6656314599949 Q408.39392867553227,280.2531028477879 454.96658584050647,283.15092303249094"/>
+        </circle>
+
+        <!-- 4 · bottom-right · Key features · amber -->
+        <path class="ed" d="M325.83194825675696,307.665631459995 Q359.3124916456066,332.94187439992294 380.495976719957,369.15092303249094"/>
+        <circle r="3.4" fill="#C98000">
+          <animateMotion dur="4s" begin="1.8s" repeatCount="indefinite" path="M325.83194825675696,307.665631459995 Q359.3124916456066,332.94187439992294 380.495976719957,369.15092303249094"/>
+        </circle>
+
+        <!-- 5 · bottom · Solutions arsenal · pink -->
+        <path class="ed" d="M260,326 Q252.4,364 260,402"/>
+        <circle r="3.4" fill="#D93A62">
+          <animateMotion dur="4.9s" begin="2.25s" repeatCount="indefinite" path="M260,326 Q252.4,364 260,402"/>
+        </circle>
+
+        <!-- 6 · bottom-left · Track record · teal -->
+        <path class="ed" d="M194.16805174324304,307.665631459995 Q172.98456666889263,343.874680092563 139.50402328004304,369.15092303249094"/>
+        <circle r="3.4" fill="#0E94A6">
+          <animateMotion dur="5.8s" begin="2.7s" repeatCount="indefinite" path="M194.16805174324304,307.665631459995 Q172.98456666889263,343.874680092563 139.50402328004304,369.15092303249094"/>
+        </circle>
+
+        <!-- 7 · mid-left · Data security · olive -->
+        <path class="ed" d="M153.4816701749428,259.665631459995 Q106.90901300996856,262.56345164469803 65.03341415949353,283.150923032491"/>
+        <circle r="3.4" fill="#5F7F10">
+          <animateMotion dur="6.7s" begin="3.15s" repeatCount="indefinite" path="M153.4816701749428,259.665631459995 Q106.90901300996856,262.56345164469803 65.03341415949353,283.150923032491"/>
+        </circle>
+
+        <!-- 8 · upper-left · BFSI compliance · indigo -->
+        <path class="ed" d="M153.4816701749428,200.33436854000502 Q106.90901300996856,197.43654835530194 65.03341415949353,176.849076967509"/>
+        <circle r="3.4" fill="#4048D6">
+          <animateMotion dur="4s" begin="3.6s" repeatCount="indefinite" path="M153.4816701749428,200.33436854000502 Q106.90901300996856,197.43654835530194 65.03341415949353,176.849076967509"/>
+        </circle>
+
+        <!-- 9 · top-left · Ecosystem · brown -->
+        <path class="ed" d="M194.16805174324298,152.33436854000507 Q172.9845666688926,116.12531990743707 139.504023280043,90.84907696750906"/>
+        <circle r="3.4" fill="#C4650E">
+          <animateMotion dur="4.9s" begin="4.05s" repeatCount="indefinite" path="M194.16805174324298,152.33436854000507 Q172.9845666688926,116.12531990743707 139.504023280043,90.84907696750906"/>
+        </circle>
+
+        <!-- ========================================================
+             LAYER 3 — Reusable drop-shadow filter
+             <defs> holds definitions that other shapes can reference.
+             filter id="lbsh" is applied on each label <rect> via
+             filter="url(#lbsh)". Soft shadow makes pills float above the map.
+             ======================================================== -->
+        <defs>
+          <filter id="lbsh" x="-20%" y="-40%" width="140%" height="180%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#1F2328" flood-opacity=".08"/>
+          </filter>
+        </defs>
+
+        <!-- ========================================================
+             LAYER 4 — Label pills (clickable page titles)
+
+             Structure of ONE pill (repeat this pattern for each page):
+               <a href="#pageKey" …>     ← link; hash matches a portfolio page
+                 <g class="lb">          ← group styled by CSS on hover
+                   <rect …/>             ← rounded white background + coloured border
+                   <text …>Title</text>  ← label text, centered on the spoke end
+                 </g>
+               </a>
+
+             Important attributes for beginners:
+               href="#what"     — browser navigates to this hash on click
+               data-page="what" — custom attribute; JS reads it on click
+               aria-label       — accessible name for screen readers
+               rect x/y/width/height/rx/ry — pill position, size, corner radius
+               stroke           — border colour (matches that page's accent)
+               text-anchor="middle" — centers text on the x coordinate
+
+             Pills are AFTER the spokes in the SVG so they paint on top.
+             ======================================================== -->
+
+        <!-- 0 · What PITG does → #what -->
+        <a href="#what" aria-label="What PITG does" data-page="what">
+          <g class="lb">
+            <rect x="197.55" y="45" width="124.9" height="26" rx="13" ry="13" fill="#fff" stroke="#2F6BFF" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="260" y="62.5" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">What PITG does</text>
+          </g>
+        </a>
+
+        <!-- 1 · The problem → #problem -->
+        <a href="#problem" aria-label="The problem" data-page="problem">
+          <g class="lb">
+            <rect x="329.070976719957" y="77.84907696750903" width="102.85" height="26" rx="13" ry="13" fill="#fff" stroke="#E8501F" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="380.495976719957" y="95.34907696750903" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">The problem</text>
+          </g>
+        </a>
+
+        <!-- 2 · Lines of business → #business -->
+        <a href="#business" aria-label="Lines of business" data-page="business">
+          <g class="lb">
+            <rect x="381.49158584050645" y="163.84907696750906" width="146.95" height="26" rx="13" ry="13" fill="#fff" stroke="#169B6A" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="454.96658584050647" y="181.34907696750906" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">Lines of business</text>
+          </g>
+        </a>
+
+        <!-- 3 · Functionalities → #functions -->
+        <a href="#functions" aria-label="Functionalities" data-page="functions">
+          <g class="lb">
+            <rect x="388.84158584050647" y="270.15092303249094" width="132.25" height="26" rx="13" ry="13" fill="#fff" stroke="#6A47F0" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="454.96658584050647" y="287.65092303249094" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">Functionalities</text>
+          </g>
+        </a>
+
+        <!-- 4 · Key features → #features -->
+        <a href="#features" aria-label="Key features" data-page="features">
+          <g class="lb">
+            <rect x="325.39597671995705" y="356.15092303249094" width="110.2" height="26" rx="13" ry="13" fill="#fff" stroke="#C98000" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="380.495976719957" y="373.65092303249094" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">Key features</text>
+          </g>
+        </a>
+
+        <!-- 5 · Solutions arsenal → #arsenal -->
+        <a href="#arsenal" aria-label="Solutions arsenal" data-page="arsenal">
+          <g class="lb">
+            <rect x="186.525" y="389" width="146.95" height="26" rx="13" ry="13" fill="#fff" stroke="#D93A62" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="260" y="406.5" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">Solutions arsenal</text>
+          </g>
+        </a>
+
+        <!-- 6 · Track record → #track -->
+        <a href="#track" aria-label="Track record" data-page="track">
+          <g class="lb">
+            <rect x="84.40402328004305" y="356.15092303249094" width="110.2" height="26" rx="13" ry="13" fill="#fff" stroke="#0E94A6" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="139.50402328004304" y="373.65092303249094" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">Track record</text>
+          </g>
+        </a>
+
+        <!-- 7 · Data security → #data -->
+        <a href="#data" aria-label="Data security" data-page="data">
+          <g class="lb">
+            <rect x="6.258414159493533" y="270.150923032491" width="117.55" height="26" rx="13" ry="13" fill="#fff" stroke="#5F7F10" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="65.03341415949353" y="287.650923032491" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">Data security</text>
+          </g>
+        </a>
+
+        <!-- 8 · BFSI compliance → #bfsi -->
+        <a href="#bfsi" aria-label="BFSI compliance" data-page="bfsi">
+          <g class="lb">
+            <rect x="-1.0915858405064682" y="163.849076967509" width="132.25" height="26" rx="13" ry="13" fill="#fff" stroke="#4048D6" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="65.03341415949353" y="181.349076967509" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">BFSI compliance</text>
+          </g>
+        </a>
+
+        <!-- 9 · Ecosystem → #ecosystem -->
+        <a href="#ecosystem" aria-label="Ecosystem" data-page="ecosystem">
+          <g class="lb">
+            <rect x="95.429023280043" y="77.84907696750906" width="88.15" height="26" rx="13" ry="13" fill="#fff" stroke="#C4650E" stroke-width="1.2" filter="url(#lbsh)"/>
+            <text x="139.504023280043" y="95.34907696750906" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12.5" font-weight="500" fill="#59636E">Ecosystem</text>
+          </g>
+        </a>
+
+        <!-- ========================================================
+             LAYER 5 — Center logo (drawn LAST = sits on top)
+             White circle covers the inner ends of the spokes.
+             <image> shows the PITG logo centered inside that circle.
+             Path ../../assets/logo.png goes up to segregated-code/assets/.
+             ======================================================== -->
+        <circle cx="260" cy="230" r="62" fill="#fff" stroke="#DCE5F4"/>
+        <image href="../../assets/logo.png" x="216" y="197" width="88" height="66"/>
+
+      </svg>
+    </div>
+  </div>
+
+  <!-- Click / press feedback only — does NOT build the map -->
+  <script src="portfolio-map.js"></script>
+</body>
+</html>

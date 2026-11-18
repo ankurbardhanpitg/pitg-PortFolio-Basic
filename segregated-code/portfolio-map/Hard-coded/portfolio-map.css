@@ -1,0 +1,176 @@
+/*
+ * ProcessIT Global — Hard-coded / portfolio-map.css
+ * ------------------------------------------------
+ * LEARNING / REFERENCE extract for designers and beginners.
+ *
+ * What this file styles:
+ *   The fake "browser window" and the circular SVG portfolio map
+ *   that lives inside portfolio-map.html.
+ *
+ * Hard-coded difference:
+ *   In the sibling folder, JS injects the SVG. Here the SVG is already
+ *   in the HTML. This CSS only paints it — it does not create elements.
+ *
+ * How to read this file (beginner map):
+ *   1) :root / body   — shared colours and page backdrop
+ *   2) .gh-win        — outer white window frame (border, shadow, size)
+ *   3) .gh-wb         — title bar (grey dots + "pitg / portfolio-map" text)
+ *   4) .gh-wc         — padding around the SVG map
+ *   5) .hv …          — SVG spokes, ring, and label hover effects
+ *
+ * HTML this CSS expects (see portfolio-map.html):
+ *   .gh-win > .gh-wb + .gh-wc.hv#hv
+ *   Inside #hv: a full <svg> with .ring, .ed paths, and <a> .lb pills.
+ *
+ * Tip for beginners:
+ *   Change --bd / --sf / box-shadow to restyle the window chrome.
+ *   Change .hv stroke colours to restyle the map lines.
+ *   .is-active is toggled by portfolio-map.js on click (short press pulse).
+ */
+
+/* ---- Theme variables (reuse these colours anywhere below) ---- */
+:root {
+  --fg: #1F2328;   /* main text colour */
+  --mu: #59636E;   /* muted / grey text (title bar label) */
+  --bd: #D1D9E0;   /* border colour for the window */
+  --sf: #F6F8FA;   /* soft fill for the title bar */
+}
+
+/* Make padding/border count inside width/height for every element */
+* {
+  box-sizing: border-box;
+}
+
+/* Page backdrop for this standalone extract */
+body {
+  margin: 0;
+  padding: 24px;
+  background: #F4F8FF;   /* light blue page behind the window */
+  font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+  color: var(--fg);
+}
+
+/* ============================================================
+ * WINDOW SHELL (.gh-win)
+ *   The white rounded card that looks like a small app window.
+ *   Max-width keeps it readable when the extract is opened alone.
+ * ============================================================ */
+.gh-win {
+  position: relative;
+  width: 100%;
+  max-width: 780px;          /* do not stretch too wide in the extract */
+  margin: 0 auto;            /* centre the window on the page */
+  border: 1px solid var(--bd);
+  border-radius: 14px;       /* soft rounded corners */
+  background: #fff;
+  box-shadow:
+    0 40px 90px rgba(31, 35, 40, .13),   /* soft drop shadow */
+    0 2px 6px rgba(31, 35, 40, .04);     /* tiny near-edge shadow */
+  overflow: hidden;          /* clips children to the rounded corners */
+  text-align: left;
+}
+
+/* ============================================================
+ * TITLE BAR (.gh-wb)
+ *   Grey strip at the top with three "traffic light" dots and a label.
+ *   The <i> tags are the dots; the <span> is the window title text.
+ * ============================================================ */
+.gh-wb {
+  display: flex;             /* dots + title in one horizontal row */
+  align-items: center;
+  gap: 7px;                  /* space between the three dots */
+  padding: 11px 16px;
+  background: var(--sf);
+  border-bottom: 1px solid var(--bd);
+}
+
+/* One traffic-light dot (there are three <i> elements in the HTML) */
+.gh-wb i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;        /* makes a circle */
+  background: #D1D9E0;
+}
+
+/* Window title text, e.g. "pitg / portfolio-map" */
+.gh-wb span {
+  margin-left: 10px;         /* gap after the dots */
+  font: 500 12.5px ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--mu);
+}
+
+/* ============================================================
+ * MAP MOUNT (.gh-wc)
+ *   Padding around the SVG. In this hard-coded version the SVG
+ *   is already written inside #hv in the HTML (not injected by JS).
+ * ============================================================ */
+.gh-wc {
+  padding: 6px 18px 16px;
+}
+
+/* Make the SVG fill the window width and keep its aspect ratio */
+.gh-wc svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;         /* allow label pills to peek slightly outside */
+  max-height: 420px;
+}
+
+/* ============================================================
+ * CIRCULAR MAP SVG (.hv …)
+ *   Classes used on elements INSIDE the SVG (written in the HTML):
+ *     .ed   — dashed curved spoke from the ring to a label
+ *     .ring — dashed ellipse around the centre logo
+ *     .lb   — label pill group (rounded rect + title text)
+ * ============================================================ */
+
+/* Dashed curved edges (spokes) from the inner ring to each page label */
+.hv .ed {
+  stroke: #CBD3E1;           /* line colour */
+  stroke-width: 1.3;
+  stroke-dasharray: 2 7;     /* short dash, longer gap → dotted look */
+  stroke-linecap: round;
+  fill: none;                /* lines only, no filled shape */
+}
+
+/* Dashed ellipse around the centre logo */
+.hv .ring {
+  fill: none;
+  stroke: #DDE3EE;
+  stroke-dasharray: 3 9;
+}
+
+/* ============================================================
+ * LABEL PILL INTERACTION
+ *   Hover (CSS) and click press (JS adds .is-active briefly)
+ *   both scale the pill up ~6% and tint the background slightly.
+ *
+ *   transform-box / transform-origin:
+ *     Needed so scale() uses the SVG element's own box as the origin.
+ *     Without them, SVG hover scales can look wrong or jump.
+ * ============================================================ */
+.hv a .lb {
+  transition: transform .25s;
+  transform-box: fill-box;
+  transform-origin: center;
+  cursor: pointer;
+}
+
+/* Grow on mouse hover OR while JS keeps .is-active after a click */
+.hv a:hover .lb,
+.hv a.is-active .lb {
+  transform: scale(1.06);
+}
+
+/* Default pill background */
+.hv a .lb rect {
+  fill: #fff;
+  transition: fill .25s;
+}
+
+/* Slightly grey fill on hover / press so the pill feels interactive */
+.hv a:hover .lb rect,
+.hv a.is-active .lb rect {
+  fill: #FAFBFC;
+}
