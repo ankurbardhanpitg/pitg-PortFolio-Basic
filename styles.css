@@ -50,17 +50,20 @@ kbd{font:600 11px Inter,Arial,sans-serif;color:var(--mu);border:1px solid var(--
 }
 @media(max-width:560px){.gh-r .btn-pri{display:none}}
 /* ---------- Home hero + portfolio-map window ---------- */
-.gh-hero{position:relative;overflow:hidden;text-align:center;padding:84px 0 40px;background:radial-gradient(70% 55% at 50% 0%,#E8F1FF 0%,#F4F8FF 38%,#fff 75%)}
+.gh-hero{position:relative;overflow:hidden;text-align:left;padding:72px 0 48px;background:radial-gradient(70% 55% at 50% 0%,#E8F1FF 0%,#F4F8FF 38%,#fff 75%)}
 .gh-hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(#E2E8F2 1px,transparent 1px),linear-gradient(90deg,#E2E8F2 1px,transparent 1px);background-size:64px 64px;-webkit-mask-image:radial-gradient(60% 60% at 50% 20%,#000,transparent 80%);mask-image:radial-gradient(60% 60% at 50% 20%,#000,transparent 80%);opacity:.55}
-.gh-hin{position:relative;max-width:980px;margin:0 auto;padding:0 28px}
-.gh-pill{display:inline-flex;align-items:center;gap:10px;padding:5px 14px;border:1px solid #CFE0F7;border-radius:999px;background:rgba(255,255,255,.85);font:600 13px Inter,Arial,sans-serif;color:#0B4F9E}.gh-pill i{width:8px;height:8px;border-radius:50%;background:#22B07D;box-shadow:0 0 0 4px rgba(34,176,125,.18)}
-.gh-hero h1{margin:26px auto 20px;font-size:clamp(38px,6.6vw,84px);line-height:1.02;letter-spacing:-.045em;font-weight:800;max-width:960px}
-.gh-hero p.l{margin:0 auto 32px;max-width:640px;font-size:clamp(17px,1.6vw,21px);line-height:1.6;color:var(--mu)}
-.gh-win{position:relative;max-width:780px;margin:56px auto 0;border:1px solid var(--bd);border-radius:14px;background:#fff;box-shadow:0 40px 90px rgba(31,35,40,.13),0 2px 6px rgba(31,35,40,.04);overflow:hidden;text-align:left}
+.gh-hin{position:relative;max-width:1280px;margin:0 auto;padding:0 32px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:40px;align-items:center}
+.gh-hcopy{min-width:0}
+.gh-pill{display:inline-flex;align-items:center;padding:6px 14px;border:0;border-radius:999px;background:rgba(47,107,255,.12);font:600 12px Inter,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#2F6BFF;line-height:1.2;margin-bottom:18px}
+.gh-hero h1{margin:0 0 18px;font-size:clamp(32px,4.2vw,56px);line-height:1.06;letter-spacing:-.04em;font-weight:800;max-width:none}
+.gh-hero p.l{margin:0 0 28px;max-width:520px;font-size:clamp(16px,1.4vw,19px);line-height:1.6;color:var(--mu)}
+.gh-win{position:relative;width:100%;max-width:none;margin:0;border:1px solid var(--bd);border-radius:14px;background:#fff;box-shadow:0 40px 90px rgba(31,35,40,.13),0 2px 6px rgba(31,35,40,.04);overflow:hidden;text-align:left}
 .gh-wb{display:flex;align-items:center;gap:7px;padding:11px 16px;background:var(--sf);border-bottom:1px solid var(--bd)}.gh-wb i{width:11px;height:11px;border-radius:50%;background:#D1D9E0}.gh-wb span{margin-left:10px;font:500 12.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mu)}
-.gh-wc{padding:6px 24px 18px}.gh-wc svg{width:100%;height:auto;display:block;overflow:visible;max-height:420px}
+.gh-wc{padding:6px 18px 16px}.gh-wc svg{width:100%;height:auto;display:block;overflow:visible;max-height:380px}
 .hv .ed{stroke:#CBD3E1;stroke-width:1.3;stroke-dasharray:2 7;stroke-linecap:round;fill:none}.hv .ring{fill:none;stroke:#DDE3EE;stroke-dasharray:3 9}
 .hv a .lb{transition:transform .25s;transform-box:fill-box;transform-origin:center}.hv a:hover .lb{transform:scale(1.06)}.hv a .lb rect{fill:#fff}.hv a:hover .lb rect{fill:#FAFBFC}
+@media(max-width:980px){.gh-hin{grid-template-columns:1fr;gap:32px;padding:0 20px;text-align:center}.gh-hcopy{display:flex;flex-direction:column;align-items:center}.gh-hero p.l{margin-left:auto;margin-right:auto}.gh-hero h1{font-size:clamp(30px,7vw,48px)}}
+@media(max-width:560px){.gh-hero{padding:48px 0 32px}.gh-hin{padding:0 18px}}
 /* ---------- About PITG (#about) ---------- */
 #about .gh-sh{max-width:720px;text-align:left}
 #about .g3{align-items:stretch}
