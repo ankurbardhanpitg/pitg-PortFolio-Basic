@@ -53,10 +53,37 @@
 <!-- KPI strip: #sti populated from PG 'what' page stats -->
 <section class="gh-st"><div class="gh-sti" id="sti"></div></section>
 
-<!-- Portfolio 3D-style carousel: slides injected into #stg; controls below -->
-<section class="gh-sec cs" id="slides"><div class="wrap"><div class="gh-sh"><span class="eb">Portfolio</span><h2>Explore the ProcessIT Global portfolio.</h2><p>Rotate through every page, then open one for the full detail.</p></div></div>
-<div class="stg" id="stg" tabindex="0" aria-label="Portfolio slides carousel" aria-roledescription="carousel"></div>
-<div class="ctl"><button class="ar" id="pv" type="button" aria-label="Previous slide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg></button><span class="cnt" id="cnt" aria-live="polite"></span><button class="ar" id="nv" type="button" aria-label="Next slide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></div><div class="dts" id="dts" role="tablist" aria-label="Choose slide"></div></section>
+<!-- ========== Portfolio 3D-style carousel ========== -->
+<!-- Slides are injected into #stg by script.js; #dts dots and #cnt counter update with active slide -->
+<section class="gh-sec cs" id="slides">
+
+  <!-- Section heading -->
+  <div class="wrap">
+    <div class="gh-sh">
+      <span class="eb">Portfolio</span>
+      <h2>Explore the ProcessIT Global portfolio.</h2>
+      <p>Rotate through every page, then open one for the full detail.</p>
+    </div>
+  </div>
+
+  <!-- Stage: carousel cards rendered here (#stg) -->
+  <div class="stg" id="stg" tabindex="0" aria-label="Portfolio slides carousel" aria-roledescription="carousel"></div>
+
+  <!-- Controls: previous (#pv), live counter (#cnt), next (#nv) -->
+  <div class="ctl">
+    <button class="ar" id="pv" type="button" aria-label="Previous slide">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>
+    </button>
+    <span class="cnt" id="cnt" aria-live="polite"></span>
+    <button class="ar" id="nv" type="button" aria-label="Next slide">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  <!-- Dot indicators: one tab button per slide (#dts) -->
+  <div class="dts" id="dts" role="tablist" aria-label="Choose slide"></div>
+
+</section>
 
 <!-- Static home sections: approach, case studies, timeline, etc. -->
 <section class="gh-sec nx-sec" id="how"><div class="wrap"><div class="gh-sh"><span class="eb">Approach</span><h2>How PITG does it.</h2><p>The problems standard security engines leave open, and what PITG builds in response.</p></div><div class="how-acc"><details><summary><span class="how-k">PROBLEM</span><span class="how-q">Mass-market OEMs</span><span class="how-d">Vendors do not write custom code for unique networks.</span></summary><div class="how-a"><span class="how-k">SOLUTION</span><p>Bespoke R&amp;D connectors, drivers and dashboards.</p></div></details><details><summary><span class="how-k">PROBLEM</span><span class="how-q">Legacy burden</span><span class="how-d">Air-gapped and 15+ year-old systems resist Tier-1 tools.</span></summary><div class="how-a"><span class="how-k">SOLUTION</span><p>An integration fabric that bridges legacy and modern.</p></div></details><details><summary><span class="how-k">PROBLEM</span><span class="how-q">AI threat vector</span><span class="how-d">Non-human identities leave endpoint tools exposed.</span></summary><div class="how-a"><span class="how-k">SOLUTION</span><p>Identity-led controls and ITDR for human and AI identities.</p></div></details></div></div></section>

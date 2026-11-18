@@ -1,0 +1,60 @@
+<!--
+  ProcessIT Global — portfolio-slides.html
+  ---------------------------------------
+  COPIED EXTRACT for designers / reference only.
+  Live site still uses: home.html (#slides) + script.js + styles.css.
+  Do not treat this folder as wired into the main page unless you link it yourself.
+
+  What this is:
+  The 3D portfolio carousel section (#slides): heading, stage (#stg),
+  prev/next controls + counter, and dot indicators (#dts).
+  Slide cards are injected into #stg by portfolio-slides.js.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pitg / portfolio-slides (extract)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="portfolio-slides.css">
+</head>
+<body>
+
+  <!-- ========== Portfolio 3D-style carousel ========== -->
+  <!-- Slides are injected into #stg by portfolio-slides.js; #dts dots and #cnt counter update with active slide -->
+  <section class="gh-sec cs" id="slides">
+
+    <!-- Section heading -->
+    <div class="wrap">
+      <div class="gh-sh">
+        <span class="eb">Portfolio</span>
+        <h2>Explore the ProcessIT Global portfolio.</h2>
+        <p>Rotate through every page, then open one for the full detail.</p>
+      </div>
+    </div>
+
+    <!-- Stage: carousel cards rendered here (#stg) -->
+    <div class="stg" id="stg" tabindex="0" aria-label="Portfolio slides carousel" aria-roledescription="carousel"></div>
+
+    <!-- Controls: previous (#pv), live counter (#cnt), next (#nv) -->
+    <div class="ctl">
+      <button class="ar" id="pv" type="button" aria-label="Previous slide">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>
+      </button>
+      <span class="cnt" id="cnt" aria-live="polite"></span>
+      <button class="ar" id="nv" type="button" aria-label="Next slide">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Dot indicators: one tab button per slide (#dts) -->
+    <div class="dts" id="dts" role="tablist" aria-label="Choose slide"></div>
+
+  </section>
+
+  <script src="portfolio-slides.js"></script>
+</body>
+</html>
