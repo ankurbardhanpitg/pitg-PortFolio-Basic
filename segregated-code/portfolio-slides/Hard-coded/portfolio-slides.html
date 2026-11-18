@@ -1,0 +1,626 @@
+<!--
+  ProcessIT Global — Hard-coded / portfolio-slides.html
+  ----------------------------------------------------
+  LEARNING / REFERENCE extract for designers and beginners.
+
+  What this page is:
+    The 3D portfolio carousel (#slides): heading, stage (#stg),
+    prev/next controls + counter, and dot indicators (#dts).
+    All 10 slide cards are written directly in this HTML file.
+
+  Hard-coded vs dynamic (../portfolio-slides.js):
+    The sibling folder builds each slide from a PG[] data list in JS.
+    HERE every title, body, chart, chip, and accent colour is in HTML.
+    That makes the structure easy to read and edit without knowing JS loops.
+
+  File roles in this folder:
+    portfolio-slides.html  → structure (this file) — all slide markup lives here
+    portfolio-slides.css   → look (3D coverflow, cards, charts, controls)
+    portfolio-slides.js    → behaviour only (rotate, swipe, dots, autoplay)
+
+  How to read this file (beginner map):
+    1) .gh-sec / .gh-sh     — section heading ("Portfolio")
+    2) #stg                 — stage; all <article class="sl"> cards stack here
+    3) .sl.p0 / .p1 / .p2   — centre / next / previous (JS toggles these)
+    4) .sl.p3               — off-stage (hidden) cards
+    5) .ctl / #pv #nv #cnt  — arrows + live counter text
+    6) #dts .dt             — one dot button per slide
+
+  Slide order (featured first, same as the dynamic extract):
+    0 features, 1 functions, 2 business,
+    3 what, 4 problem, 5 arsenal, 6 track, 7 data, 8 bfsi, 9 ecosystem
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Makes the layout scale on phones / tablets -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pitg / portfolio-slides (hard-coded)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Styles for the carousel stage, slide cards, and controls -->
+  <link rel="stylesheet" href="portfolio-slides.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       PORTFOLIO 3D-STYLE CAROUSEL
+       All slide cards + dots are hard-coded below.
+       JS only rotates classes (p0/p1/p2/p3) and updates the counter.
+       ============================================================ -->
+  <section class="gh-sec cs" id="slides">
+
+    <!-- Section heading -->
+    <div class="wrap">
+      <div class="gh-sh">
+        <span class="eb">Portfolio</span>
+        <h2>Explore the ProcessIT Global portfolio.</h2>
+        <p>Rotate through every page, then open one for the full detail.</p>
+      </div>
+    </div>
+
+    <!--
+      Stage (#stg).
+      Every <article class="sl"> sits in the same grid cell.
+      CSS classes p0 / p1 / p2 / p3 place them in 3D space.
+      Initial state: slide 0 = p0 (centre), 1 = p1 (next), 9 = p2 (prev).
+    -->
+    <div class="stg" id="stg" tabindex="0" aria-label="Portfolio slides carousel" aria-roledescription="carousel">
+
+      <!-- Slide 0: features — Key features — 3-column mini cards (.sg.g-feat > .mc) -->
+      <article class="sl p0" data-i="0" data-key="features" style="--t:#FFF6DD;--a:#C98000" aria-roledescription="slide" aria-label="Key features" aria-hidden="false">
+        <div class="sh">
+          <div>
+            <span class="eb">Key features</span>
+            <h3>Key features</h3>
+            <p>What sets the PITG delivery apart.</p>
+          </div>
+          <a class="go" href="#features" tabindex="0" aria-label="Open the Key features page" title="Open Key features">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="sg g-feat">
+        <div class="mc">
+        <b>Bespoke R&amp;D integration</b>
+        <p>Custom connectors, drivers and dashboards where OEMs stop.</p>
+        </div>
+        <div class="mc">
+        <b>Legacy and air-gapped ready</b>
+        <p>Bridges 15+ year-old and offline systems to Tier-1 engines.</p>
+        </div>
+        <div class="mc">
+        <b>Identity-led architecture</b>
+        <p>Unified outcomes, not fragmented point products.</p>
+        </div>
+        <div class="mc">
+        <b>Operational lock-in</b>
+        <p>A solidified integration layer for dependable operations.</p>
+        </div>
+        <div class="mc">
+        <b>Compliance mapped</b>
+        <p>RBI controls mapped to audit-ready evidence.</p>
+        </div>
+        <div class="mc">
+        <b>Sovereign-cleared record</b>
+        <p>Defence, health, finance and a state SOC delivered.</p>
+        </div>
+        </div>
+      </article>
+
+      <!-- Slide 1: functions — Functionalities — coloured left-border chips (.sg.g-fn > .fx) -->
+      <article class="sl p1" data-i="1" data-key="functions" style="--t:#F1ECFF;--a:#6A47F0" aria-roledescription="slide" aria-label="Functionalities" aria-hidden="true">
+        <div class="sh">
+          <div>
+            <span class="eb">Functionalities</span>
+            <h3>Functionalities</h3>
+            <p>What the portfolio does in practice, and the platform behind each capability.</p>
+          </div>
+          <a class="go" href="#functions" tabindex="-1" aria-label="Open the Functionalities page" title="Open Functionalities">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="sg g-fn">
+        <div class="fx" style="--k:#2F6BFF">
+        <b>Lifecycle and governance</b>
+        <small>NetIQ</small>
+        </div>
+        <div class="fx" style="--k:#2F6BFF">
+        <b>Access and SSO</b>
+        <small>NetIQ</small>
+        </div>
+        <div class="fx" style="--k:#12B5CB">
+        <b>Strong authentication, Zero Trust</b>
+        <small>Silverfort</small>
+        </div>
+        <div class="fx" style="--k:#2F6BFF">
+        <b>Privileged access</b>
+        <small>NetIQ</small>
+        </div>
+        <div class="fx" style="--k:#2F6BFF">
+        <b>AD management</b>
+        <small>NetIQ</small>
+        </div>
+        <div class="fx" style="--k:#12B5CB">
+        <b>Identity threat defence</b>
+        <small>Silverfort</small>
+        </div>
+        <div class="fx" style="--k:#22B07D">
+        <b>Data protection</b>
+        <small>Voltage</small>
+        </div>
+        <div class="fx" style="--k:#7B5CFA">
+        <b>Application assurance</b>
+        <small>Fortify</small>
+        </div>
+        <div class="fx" style="--k:#F59E2B">
+        <b>Threat monitoring</b>
+        <small>SOC</small>
+        </div>
+        </div>
+      </article>
+
+      <!-- Slide 2: business — Lines of business — numbered mini cards (.sg.g-bz > .mc) -->
+      <article class="sl p3" data-i="2" data-key="business" style="--t:#E8F8F1;--a:#169B6A" aria-roledescription="slide" aria-label="Lines of business" aria-hidden="true">
+        <div class="sh">
+          <div>
+            <span class="eb">Lines of business</span>
+            <h3>Lines of business</h3>
+            <p>Four lines of business, one identity-led architecture.</p>
+          </div>
+          <a class="go" href="#business" tabindex="-1" aria-label="Open the Lines of business page" title="Open Lines of business">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="sg g-bz">
+        <div class="mc">
+        <span class="n">01</span>
+        <b>Human and AI-agent identity security</b>
+        <p>IAM, IGA, PAM, MFA, ITDR. OpenText NetIQ, Silverfort.</p>
+        </div>
+        <div class="mc">
+        <span class="n">02</span>
+        <b>Data and application security</b>
+        <p>Encryption, tokenisation, code review. OpenText Voltage, Fortify.</p>
+        </div>
+        <div class="mc">
+        <span class="n">03</span>
+        <b>Tier-1 managed enterprise SOC</b>
+        <p>SIEM, SOAR, UEBA, NTA, VAPT, EDR. Splunk, ArcSight.</p>
+        </div>
+        <div class="mc">
+        <span class="n">04</span>
+        <b>Proprietary MSME SOC</b>
+        <p>Enterprise-grade defence for MSMEs. In-house, open-source.</p>
+        </div>
+        </div>
+      </article>
+
+      <!-- Slide 3: what — What PITG does — KPI strip + verb chips (.pvw) -->
+      <article class="sl p3" data-i="3" data-key="what" style="--t:#EAF1FF;--a:#2F6BFF" aria-roledescription="slide" aria-label="What PITG does" aria-hidden="true">
+        <div class="sh">
+          <div>
+            <span class="eb">What PITG does</span>
+            <h3>What PITG does</h3>
+            <p>Architected with a consulting lens, delivered with engineering rigour, maintained with operational discipline.</p>
+          </div>
+          <a class="go" href="#what" tabindex="-1" aria-label="Open the What PITG does page" title="Open What PITG does">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="pvw">
+        <div class="kp">
+        <div>
+        <strong>40+</strong>
+        <span>IAM and IGA projects</span>
+        </div>
+        <div>
+        <strong>27+</strong>
+        <span>Implementations</span>
+        </div>
+        <div>
+        <strong>10+</strong>
+        <span>Advisory</span>
+        </div>
+        <div>
+        <strong>1M+</strong>
+        <span>Identities covered</span>
+        </div>
+        <div>
+        <strong>55+</strong>
+        <span>Professionals</span>
+        </div>
+        <div>
+        <strong>3</strong>
+        <span>Countries</span>
+        </div>
+        </div>
+        <h3>Four verbs behind every engagement</h3>
+        <div class="ch">
+        <span>Design</span>
+        <span>Integrate</span>
+        <span>Operationalise</span>
+        <span>Simplify</span>
+        </div>
+        </div>
+      </article>
+
+      <!-- Slide 4: problem — The problem — native <details> accordion (.how-acc) -->
+      <article class="sl p3" data-i="4" data-key="problem" style="--t:#FFF0E8;--a:#E8501F" aria-roledescription="slide" aria-label="The problem" aria-hidden="true">
+        <div class="sh">
+          <div>
+            <span class="eb">The problem</span>
+            <h3>The problem</h3>
+            <p>Why standard security engines fail in production, and what PITG builds in response.</p>
+          </div>
+          <a class="go" href="#problem" tabindex="-1" aria-label="Open the The problem page" title="Open The problem">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="how-acc">
+        <details>
+        <summary>
+        <span class="how-k">Problem</span>
+        <span class="how-q">Mass-market OEMs</span>
+        <span class="how-d">Vendors do not write custom code for unique networks.</span>
+        </summary>
+        <div class="how-a">
+        <span class="how-k">PITG answer</span>
+        <p>Bespoke R&amp;D connectors, drivers and dashboards.</p>
+        </div>
+        </details>
+        <details>
+        <summary>
+        <span class="how-k">Problem</span>
+        <span class="how-q">Legacy burden</span>
+        <span class="how-d">Air-gapped and 15+ year-old systems resist Tier-1 tools.</span>
+        </summary>
+        <div class="how-a">
+        <span class="how-k">PITG answer</span>
+        <p>An integration fabric that bridges legacy and modern.</p>
+        </div>
+        </details>
+        <details>
+        <summary>
+        <span class="how-k">Problem</span>
+        <span class="how-q">AI threat vector</span>
+        <span class="how-d">Non-human identities leave endpoint tools exposed.</span>
+        </summary>
+        <div class="how-a">
+        <span class="how-k">PITG answer</span>
+        <p>Identity-led controls and ITDR for human and AI identities.</p>
+        </div>
+        </details>
+        </div>
+      </article>
+
+      <!-- Slide 5: arsenal — Solutions arsenal — horizontal bars (.br) -->
+      <article class="sl p3" data-i="5" data-key="arsenal" style="--t:#FFEBF0;--a:#D93A62" aria-roledescription="slide" aria-label="Solutions arsenal" aria-hidden="true">
+        <div class="sh">
+          <div>
+            <span class="eb">Solutions arsenal</span>
+            <h3>Solutions arsenal</h3>
+            <p>Platforms PITG consults on, implements and operates, grouped by capability.</p>
+          </div>
+          <a class="go" href="#arsenal" tabindex="-1" aria-label="Open the Solutions arsenal page" title="Open Solutions arsenal">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="pvw">
+        <h3>Products and modules by group</h3>
+        <div class="br">
+        <span>Identity and Access</span>
+        <div>
+        <i style="width:71.42857142857143%">
+        </i>
+        </div>
+        <em>5</em>
+        </div>
+        <div class="br">
+        <span>AD Management</span>
+        <div>
+        <i style="width:42.857142857142854%">
+        </i>
+        </div>
+        <em>3</em>
+        </div>
+        <div class="br">
+        <span>Identity Defence</span>
+        <div>
+        <i style="width:57.14285714285714%">
+        </i>
+        </div>
+        <em>4</em>
+        </div>
+        <div class="br">
+        <span>Data Security</span>
+        <div>
+        <i style="width:71.42857142857143%">
+        </i>
+        </div>
+        <em>5</em>
+        </div>
+        <div class="br">
+        <span>App Security</span>
+        <div>
+        <i style="width:42.857142857142854%">
+        </i>
+        </div>
+        <em>3</em>
+        </div>
+        <div class="br">
+        <span>Security Ops</span>
+        <div>
+        <i style="width:100%">
+        </i>
+        </div>
+        <em>7</em>
+        </div>
+        </div>
+      </article>
+
+      <!-- Slide 6: track — Track record — KPIs + donut + column chart (.pvw) -->
+      <article class="sl p3" data-i="6" data-key="track" style="--t:#E3F7FA;--a:#0E94A6" aria-roledescription="slide" aria-label="Track record" aria-hidden="true">
+        <div class="sh">
+          <div>
+            <span class="eb">Track record</span>
+            <h3>Track record</h3>
+            <p>Delivered for sovereign, defence and regulated clients where technical entry barriers are restrictive.</p>
+          </div>
+          <a class="go" href="#track" tabindex="-1" aria-label="Open the Track record page" title="Open Track record">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="pvw">
+        <div class="kp">
+        <div>
+        <strong>250K+</strong>
+        <span>Largest IAM programme</span>
+        </div>
+        <div>
+        <strong>1M+</strong>
+        <span>Identities covered</span>
+        </div>
+        <div>
+        <strong>34</strong>
+        <span>Named clients across 5 sectors</span>
+        </div>
+        </div>
+        <div class="g2">
+        <div>
+        <h3>IAM engagements by segment (%)</h3>
+        <div class="dn">
+        <svg viewBox="0 0 42 42">
+        <circle cx="21" cy="21" r="15.9155" stroke="#2F6BFF" stroke-dasharray="32.4 67.6" stroke-dashoffset="0"/>
+        <circle cx="21" cy="21" r="15.9155" stroke="#12B5CB" stroke-dasharray="32.4 67.6" stroke-dashoffset="-33"/>
+        <circle cx="21" cy="21" r="15.9155" stroke="#7B5CFA" stroke-dasharray="19.4 80.6" stroke-dashoffset="-66"/>
+        <circle cx="21" cy="21" r="15.9155" stroke="#F59E2B" stroke-dasharray="7.4 92.6" stroke-dashoffset="-86"/>
+        <circle cx="21" cy="21" r="15.9155" stroke="#22B07D" stroke-dasharray="5.4 94.6" stroke-dashoffset="-94"/>
+        </svg>
+        <div class="lgd">
+        <div>
+        <i style="background:#2F6BFF">
+        </i>Central and State Govt<b>33</b>
+        </div>
+        <div>
+        <i style="background:#12B5CB">
+        </i>Defence and Armed Forces<b>33</b>
+        </div>
+        <div>
+        <i style="background:#7B5CFA">
+        </i>BFSI<b>20</b>
+        </div>
+        <div>
+        <i style="background:#F59E2B">
+        </i>Utilities and PSU<b>8</b>
+        </div>
+        <div>
+        <i style="background:#22B07D">
+        </i>Smart Cities<b>6</b>
+        </div>
+        </div>
+        </div>
+        </div>
+        <div>
+        <h3>Identities covered (thousands)</h3>
+        <div class="cl">
+        <div>
+        <b>300K+</b>
+        <i style="height:78%">
+        </i>Govt</div>
+        <div>
+        <b>300K+</b>
+        <i style="height:78%">
+        </i>Defence</div>
+        <div>
+        <b>200K+</b>
+        <i style="height:52%">
+        </i>BFSI</div>
+        <div>
+        <b>100K+</b>
+        <i style="height:26%">
+        </i>Utilities</div>
+        <div>
+        <b>100K+</b>
+        <i style="height:26%">
+        </i>PSUs</div>
+        </div>
+        </div>
+        </div>
+        </div>
+      </article>
+
+      <!-- Slide 7: data — Data security — donut + capability chips (.pvw) -->
+      <article class="sl p3" data-i="7" data-key="data" style="--t:#EFF3E2;--a:#5F7F10" aria-roledescription="slide" aria-label="Data security" aria-hidden="true">
+        <div class="sh">
+          <div>
+            <span class="eb">Data security</span>
+            <h3>Data security</h3>
+            <p>Sensitive data protected at rest and in motion across India and Southeast Asia, on OpenText Voltage.</p>
+          </div>
+          <a class="go" href="#data" tabindex="-1" aria-label="Open the Data security page" title="Open Data security">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="pvw">
+        <div class="g2">
+        <div>
+        <h3>Voltage customers by segment (%)</h3>
+        <div class="dn">
+        <svg viewBox="0 0 42 42">
+        <circle cx="21" cy="21" r="15.9155" stroke="#2F6BFF" stroke-dasharray="48.199999999999996 51.800000000000004" stroke-dashoffset="0"/>
+        <circle cx="21" cy="21" r="15.9155" stroke="#12B5CB" stroke-dasharray="34.4 65.6" stroke-dashoffset="-48.8"/>
+        <circle cx="21" cy="21" r="15.9155" stroke="#7B5CFA" stroke-dasharray="15.6 84.39999999999999" stroke-dashoffset="-83.8"/>
+        </svg>
+        <div class="lgd">
+        <div>
+        <i style="background:#2F6BFF">
+        </i>Foreign Govt and Autonomous<b>48.8</b>
+        </div>
+        <div>
+        <i style="background:#12B5CB">
+        </i>Smart Cities<b>35</b>
+        </div>
+        <div>
+        <i style="background:#7B5CFA">
+        </i>BFSI<b>16.2</b>
+        </div>
+        </div>
+        </div>
+        </div>
+        <div>
+        <h3>Core capabilities</h3>
+        <div class="ch">
+        <span>Encryption at rest and in motion</span>
+        <span>Format-preserving encryption</span>
+        <span>Tokenisation</span>
+        <span>Key management and rotation</span>
+        <span>Masking and hashing</span>
+        <span>REST API integration</span>
+        <span>GDPR and Indian compliance</span>
+        </div>
+        </div>
+        </div>
+        </div>
+      </article>
+
+      <!-- Slide 8: bfsi — BFSI compliance — KPIs + RBI mandate chips (.pvw) -->
+      <article class="sl p3" data-i="8" data-key="bfsi" style="--t:#ECEDFF;--a:#4048D6" aria-roledescription="slide" aria-label="BFSI compliance" aria-hidden="true">
+        <div class="sh">
+          <div>
+            <span class="eb">BFSI compliance</span>
+            <h3>BFSI compliance</h3>
+            <p>RBI mandates mapped to PITG solutions.</p>
+          </div>
+          <a class="go" href="#bfsi" tabindex="-1" aria-label="Open the BFSI compliance page" title="Open BFSI compliance">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="pvw">
+        <div class="kp">
+        <div>
+        <strong>6</strong>
+        <span>RBI mandates mapped</span>
+        </div>
+        <div>
+        <strong>ISO</strong>
+        <span>27001:2022 certified</span>
+        </div>
+        <div>
+        <strong>2-6 h</strong>
+        <span>Disclosure alignment</span>
+        </div>
+        </div>
+        <h3>RBI mandates mapped</h3>
+        <div class="ch">
+        <span>Identity security (Control 19)</span>
+        <span>Hybrid cloud unification</span>
+        <span>Data leak prevention</span>
+        <span>Secure SDLC</span>
+        <span>Continuous monitoring</span>
+        <span>Vendor risk management</span>
+        </div>
+        </div>
+      </article>
+
+      <!-- Slide 9: ecosystem — Ecosystem — why-PITG cards + SI partner chips (.pvw) -->
+      <article class="sl p2" data-i="9" data-key="ecosystem" style="--t:#FDEDDD;--a:#C4650E" aria-roledescription="slide" aria-label="Ecosystem" aria-hidden="true">
+        <div class="sh">
+          <div>
+            <span class="eb">Ecosystem</span>
+            <h3>Ecosystem</h3>
+            <p>Flexible engagement models and a strong SI partner network.</p>
+          </div>
+          <a class="go" href="#ecosystem" tabindex="-1" aria-label="Open the Ecosystem page" title="Open Ecosystem">
+            <span>Open</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="pvw">
+        <div class="sg g-feat">
+        <div class="mc">
+        <b>No vendor lock-in</b>
+        <p>Agnostic R&amp;D keeps workloads portable.</p>
+        </div>
+        <div class="mc">
+        <b>Frictionless audits</b>
+        <p>One compliance library, single-pane proof.</p>
+        </div>
+        <div class="mc">
+        <b>Sovereign trust</b>
+        <p>West Bengal State SOC, defence and finance clients.</p>
+        </div>
+        </div>
+        <h3>SI partners</h3>
+        <div class="ch">
+        <span>HPE</span>
+        <span>LTI Mindtree</span>
+        <span>Blackbox</span>
+        <span>Tata Communications</span>
+        </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Controls: previous (#pv), live counter (#cnt), next (#nv) -->
+    <div class="ctl">
+      <button class="ar" id="pv" type="button" aria-label="Previous slide">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>
+      </button>
+      <span class="cnt" id="cnt" aria-live="polite"><b>01</b> / 10 &nbsp;&middot;&nbsp; Key features</span>
+      <button class="ar" id="nv" type="button" aria-label="Next slide">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Dot indicators: one tab button per slide (#dts). Active dot has class "on". -->
+    <div class="dts" id="dts" role="tablist" aria-label="Choose slide">
+    <button type="button" class="dt on" data-i="0" role="tab" aria-label="Key features" title="Key features" aria-selected="true" style="--t:#FFF6DD;--a:#C98000"></button>
+    <button type="button" class="dt" data-i="1" role="tab" aria-label="Functionalities" title="Functionalities" aria-selected="false" style="--t:#F1ECFF;--a:#6A47F0"></button>
+    <button type="button" class="dt" data-i="2" role="tab" aria-label="Lines of business" title="Lines of business" aria-selected="false" style="--t:#E8F8F1;--a:#169B6A"></button>
+    <button type="button" class="dt" data-i="3" role="tab" aria-label="What PITG does" title="What PITG does" aria-selected="false" style="--t:#EAF1FF;--a:#2F6BFF"></button>
+    <button type="button" class="dt" data-i="4" role="tab" aria-label="The problem" title="The problem" aria-selected="false" style="--t:#FFF0E8;--a:#E8501F"></button>
+    <button type="button" class="dt" data-i="5" role="tab" aria-label="Solutions arsenal" title="Solutions arsenal" aria-selected="false" style="--t:#FFEBF0;--a:#D93A62"></button>
+    <button type="button" class="dt" data-i="6" role="tab" aria-label="Track record" title="Track record" aria-selected="false" style="--t:#E3F7FA;--a:#0E94A6"></button>
+    <button type="button" class="dt" data-i="7" role="tab" aria-label="Data security" title="Data security" aria-selected="false" style="--t:#EFF3E2;--a:#5F7F10"></button>
+    <button type="button" class="dt" data-i="8" role="tab" aria-label="BFSI compliance" title="BFSI compliance" aria-selected="false" style="--t:#ECEDFF;--a:#4048D6"></button>
+    <button type="button" class="dt" data-i="9" role="tab" aria-label="Ecosystem" title="Ecosystem" aria-selected="false" style="--t:#FDEDDD;--a:#C4650E"></button>
+    </div>
+
+  </section>
+
+  <!-- Behaviour only: rotate cards, swipe, keyboard, autoplay -->
+  <script src="portfolio-slides.js"></script>
+</body>
+</html>
