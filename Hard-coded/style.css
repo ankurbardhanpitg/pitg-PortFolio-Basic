@@ -1,11 +1,19 @@
 /*
- * ProcessIT Global — styles.css
- * --------------------------------
- * All site styles for the portfolio portal (header, hero, footer, pages).
+ * ProcessIT Global — Hard-coded / style.css
+ * -----------------------------------------
+ * LEARNING / REFERENCE for designers and beginners.
+ *
+ * All visual styles for the hard-coded home page (header, hero, carousels,
+ * sections, footer, search). Copied from the live site styles.css so the
+ * page looks the same; content itself lives in home.html.
+ *
  * Naming: "gh-*" = site chrome / home; short utility classes (c, kp, fl, …)
- * are used by JS-rendered page blocks. CSS variables on :root drive theming.
+ * style cards, KPIs and charts inside the hard-coded slides.
  *
  * Breakpoints (approx): 1180px (toc), 980px (mobile nav), 900px (carousels), 560px (phone).
+ *
+ * Tip: change colours / spacing here; change wording in home.html;
+ *      change click behaviour in script.js.
  */
 :root{--fg:#1F2328;--mu:#59636E;--bd:#D1D9E0;--bd2:#E6EAEF;--sf:#F6F8FA;--bl:#0969DA;--brand:#0073DC;--ink:#1F2328;--ln:#D1D9E0;--soft:#F6F8FA;--blue:#2F6BFF;--cy:#12B5CB;--vio:#7B5CFA;--cor:#FF6B4A;--mint:#22B07D;--amb:#F59E2B;--rose:#F0567A;--a:#2F6BFF;--t:#EAF1FF;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-behavior:smooth;scroll-padding-top:84px}*{box-sizing:border-box}
@@ -61,7 +69,7 @@ kbd{font:600 11px Inter,Arial,sans-serif;color:var(--mu);border:1px solid var(--
 .gh-wb{display:flex;align-items:center;gap:7px;padding:11px 16px;background:var(--sf);border-bottom:1px solid var(--bd)}.gh-wb i{width:11px;height:11px;border-radius:50%;background:#D1D9E0}.gh-wb span{margin-left:10px;font:500 12.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mu)}
 .gh-wc{padding:6px 18px 16px}.gh-wc svg{width:100%;height:auto;display:block;overflow:visible;max-height:380px}
 .hv .ed{stroke:#CBD3E1;stroke-width:1.3;stroke-dasharray:2 7;stroke-linecap:round;fill:none}.hv .ring{fill:none;stroke:#DDE3EE;stroke-dasharray:3 9}
-.hv a .lb{transition:transform .25s;transform-box:fill-box;transform-origin:center}.hv a:hover .lb{transform:scale(1.06)}.hv a .lb rect{fill:#fff}.hv a:hover .lb rect{fill:#FAFBFC}
+.hv a .lb{transition:transform .25s;transform-box:fill-box;transform-origin:center;cursor:pointer}.hv a:hover .lb,.hv a.is-active .lb{transform:scale(1.06)}.hv a .lb rect{fill:#fff;transition:fill .25s}.hv a:hover .lb rect,.hv a.is-active .lb rect{fill:#FAFBFC}
 @media(max-width:980px){.gh-hin{grid-template-columns:1fr;gap:32px;padding:0 20px;text-align:center}.gh-hcopy{display:flex;flex-direction:column;align-items:center}.gh-hero p.l{margin-left:auto;margin-right:auto}.gh-hero h1{font-size:clamp(30px,7vw,48px)}}
 @media(max-width:560px){.gh-hero{padding:48px 0 32px}.gh-hin{padding:0 18px}}
 /* ---------- About PITG (#about) ---------- */
